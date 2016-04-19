@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rpisoni/MtG-card-fetcher.git"
+    "url": "git+https://github.com/rpisoni/mtg-card-fetcher.git"
   },
   "author": "Richard Pisoni",
   "license": "UNLICENSED",
@@ -22,7 +22,7 @@
     "gulp": "^3.9.1"
   },
   "bugs": {
-    "url": "https://github.com/rpisoni/MtG-card-fetcher/issues"
+    "url": "https://github.com/rpisoni/mtg-card-fetcher/issues"
   },
-  "homepage": "https://github.com/rpisoni/MtG-card-fetcher#readme"
+  "homepage": "https://github.com/rpisoni/mtg-card-fetcher#readme"
 }

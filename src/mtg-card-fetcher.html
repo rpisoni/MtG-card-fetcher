@@ -1,0 +1,107 @@
+<link rel="import" href="@polymer/polymer/polymer.html" />
+
+<dom-module id="mtg-card-fetcher">
+    <template>
+        <style>
+            /*ADD STYLES HERE*/
+        </style>
+        <div class="component-container">
+            <div class="search-bar">
+                <h1>MTG Card Fetcher</h1>
+                <form id="search-form">
+                    <input type="text" id="sf" placeholder="Enter a card name here!">
+                    <button id="fetch">Fetch</button>
+                </form>
+                <hr />
+            </div>
+            <template is="dom-if" if="[[loading_]]">
+                <p>Nothing To Display</p>
+            </template>
+            <template is="dom-if" if="[[ready_]]">
+                <table id="card-list">
+                    <template is="dom-repeat" items="[[cards]]">
+                        <tr>
+                            <td>
+                                <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
+                            </td>
+                            <td>
+                                <h2>[[item.name]]</h2>
+                            </td>
+                        </tr>
+                    </template>
+                </table>
+            </template>
+            <template is="dom-if" if="[[error_]]">
+                <h1>AN ERROR HAS OCCURED</h1>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "mtg-card-fetcher",
+           
+            properties: {
+                search: {
+                    type: String,
+                    value: ""
+                },
+                
+                cards:  {
+                    type: Object
+                },
+                
+                loading_:   {
+                    type: Boolean,
+                    value: true
+                },
+                
+                ready_: {
+                    type: Boolean,
+                    value: false
+                },
+                
+                error_: {
+                    type: Boolean,
+                    value: false
+                }
+            }, 
+            
+            listeners:  {
+                "fetch.click": 'searchCardsByName'
+            },
+           
+            attached: function() {
+                console.log("attached");
+            },
+            
+            searchCardsByName: function(e) {
+                e.preventDefault();
+                this.search = "name=" + this.$.sf.value;
+                this.loadCards_()
+                
+            },
+           
+            loadCards_: function ()   {
+                var self = this;
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
+                //xhr.open("GET", "https://api.magicthegathering.io/v1/cards?name=liliana", true)
+               
+                xhr.onload = function(evt)   {
+                    if(xhr.status === 200)   {
+                        self.cards = JSON.parse(xhr.responseText);
+                        console.log(self.cards);
+                        self.loading_ = false;
+                        self.ready_ = true;
+                    } else  {
+                        self.error_ = true;
+                        self.loading_ = false;
+                        self.ready_ = false;   
+                    }
+                };
+                xhr.send();
+            }
+        });
+    </script>
+</dom-module>
+        
