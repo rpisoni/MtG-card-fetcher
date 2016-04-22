@@ -1,39 +1,77 @@
 <link rel="import" href="@polymer/polymer/polymer.html" />
 
 <dom-module id="mtg-card-fetcher">
+    <script src="page/page.js"></script>
+    <script>
+        (function ()    {
+            //page('/', changeView("search"));
+            page('/:view', function (context, next)    {
+                context.handled = true;
+                changeView(context.params.view);
+                next();
+            });
+            function changeView(viewName)   {
+                console.log(viewName);
+                document.getElementsByTagName('mtg-card-fetcher')[0].setAttribute('view', viewName);
+            }
+            page.start();
+        })();
+    </script>
     <template>
         <style>
             /*ADD STYLES HERE*/
         </style>
         <div class="component-container">
-            <div class="search-bar">
-                <h1>MTG Card Fetcher</h1>
-                <form id="search-form">
-                    <input type="text" id="sf" placeholder="Enter a card name here!">
-                    <button id="fetch">Fetch</button>
-                </form>
-                <hr />
+            <div class="menu-container">
+                <a href="{{baseUrl}}search">
+                    <span>Search</span>
+                </a>
+                <a href="{{baseUrl}}deck">
+                    <span>Deck Builder</span>
+                </a>
+                <a href="{{baseUrl}}draft">
+                    <span>Draft</span>
+                </a>
             </div>
-            <template is="dom-if" if="[[loading_]]">
-                <p>Nothing To Display</p>
-            </template>
-            <template is="dom-if" if="[[ready_]]">
-                <table id="card-list">
-                    <template is="dom-repeat" items="[[cards]]">
-                        <tr>
-                            <td>
-                                <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
-                            </td>
-                            <td>
-                                <h2>[[item.name]]</h2>
-                            </td>
-                        </tr>
+            <hr />
+            <div class="content">
+                <template is="dom-if" if="[[_viewIsSearch(view)]]">
+                    <div class="search-bar">
+                        <h1>MTG Card Fetcher</h1>
+                        <form id="fetch" on-submit="_searchCardsByName">
+                            <input type="text" id="sf" placeholder="Enter a card name here!">
+                            <button id="f">Fetch</button>
+                        </form>
+                        <hr />
+                    </div>
+                    <template is="dom-if" if="[[loading_]]">
+                        <p>Nothing To Display</p>
                     </template>
-                </table>
-            </template>
-            <template is="dom-if" if="[[error_]]">
-                <h1>AN ERROR HAS OCCURED</h1>
-            </template>
+                    <template is="dom-if" if="[[ready_]]">
+                        <table id="card-list">
+                            <template is="dom-repeat" items="[[cards]]">
+                                <tr>
+                                    <td>
+                                        <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
+                                    </td>
+                                    <td>
+                                        <h2>[[item.name]]</h2>
+                                    </td>
+                                </tr>
+                            </template>
+                        </table>
+                    </template>
+                    <template is="dom-if" if="[[error_]]">
+                        <h1>AN ERROR HAS OCCURED</h1>
+                    </template>
+                </template>
+                <template is="dom-if" if="{{_viewIsDeck(view)}}">
+                    <h1>Deck Builder</h1>
+                </template>
+                <template is="dom-if" if="{{_viewIsDraft(view)}}">
+                    <h1>Draft Simulator</h1>
+                </template>
+            </div>
         </div>
     </template>
     <script>
@@ -50,9 +88,14 @@
                     type: Object
                 },
                 
+                view:   {
+                    type: String,
+                    default: "search"  
+                },
+                
                 loading_:   {
                     type: Boolean,
-                    value: true
+                    value: false
                 },
                 
                 ready_: {
@@ -67,25 +110,27 @@
             }, 
             
             listeners:  {
-                "fetch.click": 'searchCardsByName'
+                //"fetch.click": 'searchCardsByName'
             },
            
             attached: function() {
                 console.log("attached");
+                this.loadCards_();
+                
             },
             
-            searchCardsByName: function(e) {
+            _searchCardsByName: function(e) {
                 e.preventDefault();
                 this.search = "name=" + this.$.sf.value;
-                this.loadCards_()
+                this.loadCards_();
                 
             },
            
             loadCards_: function ()   {
                 var self = this;
                 var xhr = new XMLHttpRequest();
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
-                //xhr.open("GET", "https://api.magicthegathering.io/v1/cards?name=liliana", true)
+                //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=liliana", true)
                
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
@@ -100,6 +145,18 @@
                     }
                 };
                 xhr.send();
+            },
+            
+            _viewIsSearch: function (v)  {
+                return v === 'search';
+            },
+            
+            _viewIsDeck: function (v)  {
+                return v === 'deck';
+            },
+            
+            _viewIsDraft: function (v)  {
+                return v === 'draft';
             }
         });
     </script>
