@@ -19,7 +19,12 @@
     </script>
     <template>
         <style>
-            /*ADD STYLES HERE*/
+            a {
+                color: rgb(220,220,220);
+            }
+            a:visited {
+                color: rgb(220,220,220);
+            }
         </style>
         <div class="component-container">
             <div class="menu-container">
@@ -35,9 +40,11 @@
             </div>
             <hr />
             <div class="content">
+                <!-- SEARCH VIEW -->
                 <template is="dom-if" if="[[_viewIsSearch(view)]]">
                     <div class="search-bar">
                         <h1>MTG Card Fetcher</h1>
+                        <hr />
                         <form id="search-form" on-submit="_searchCardsByName">
                             <input type="text" id="sf" placeholder="Enter a card name here!">
                             <button id="fetch" on-tap="_searchCardsByName">Fetch</button>
@@ -45,7 +52,7 @@
                         <hr />
                     </div>
                     <template is="dom-if" if="[[loading_]]">
-                        <p>Nothing To Display</p>
+                        <p>LOADING...</p>
                     </template>
                     <template is="dom-if" if="[[ready_]]">
                         <table id="card-list">
@@ -65,20 +72,52 @@
                         <h1>AN ERROR HAS OCCURED</h1>
                     </template>
                 </template>
+                <!-- DECK BUILDER VIEW -->
                 <template is="dom-if" if="{{_viewIsDeck(view)}}">
                     <h1>Deck Builder</h1>
-                    <table id="decklist">
-                        <template is="dom-repeat" items="[[findCardsInDeck(deck)]]">
+                    <hr />
+                    <!--<template is="dom-repeat" items="[[findCardsInDeck(deck)]]">-->
+                    <template is="dom-repeat" items="[[cards]]">
+                        <table style="float:left;">
                             <tr>
                                 <td>
                                     <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
                                 </td>
                             </tr>
-                        </template>
-                    </table>
+                            <tr>
+                                <td>
+                                    Number of Cards
+                                    <button value="item.editions.0.multiverseid">Add</button>
+                                    <button value="item.editions.0.multiverseid">Remove</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </template>
                 </template>
+                <!-- DRAFT VIEW -->
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
                     <h1>Draft Simulator</h1>
+                    <hr />
+                    <form id="draft-form" on-submit="_getBooster">
+                        <select id="draft-select">
+                            <option value="SOI">Shadows over Innistrad</option>
+                            <option value="OGW">Oath of the Gatewatch</option>
+                            <option value="BFZ">Battle for Zendikar</option>
+                            <option value="ORI">Magic Origins</option>
+                            <option value="DTK">Dragons of Tarkir</option>
+                            <option value="FRF">Fate Reforged</option>
+                            <option value="KTK">Khans of Tarkir</option>
+                        </select>
+                        <button id="booster" on-tap="_getBooster">Open Booster</button>
+                    </form>
+                    <hr />
+                    <h2>Booster Contents</h2>
+                    <template is="dom-repeat" items="[[booster.cards]]">
+                        <img src="[[item.imageUrl]]" alt="[[item.name]]" on-tap="_pickCard"/>
+                        
+                    </template>
+                    <hr />
+                    <h2>Selected Cards</h2>
                 </template>
             </div>
         </div>
@@ -97,8 +136,12 @@
                     type: Object
                 },
                 
+                booster:    {
+                    type: Object
+                },
+                
                 deck:   {
-                    type: Array,
+                    type: Object,
                     value: [393908, 235597, 259695]
                 },
                 
@@ -131,22 +174,28 @@
                 console.log("attached");
                 console.log(this.deck);
                 this.loadCards_();
-                
+                this.loadBooster();
             },
             
             _searchCardsByName: function(e) {
                 e.preventDefault();
-                console.log(this.$$('#sf').value);
+                this.loading_ = true;
                 this.search = "name=" + this.$$('#sf').value;
                 this.loadCards_();
                 
             },
+            
+            _getBooster: function (e)    {
+                e.preventDefault();
+                this.loading_ = true;
+                console.log(this.$$('#draft-select').value);
+            },
            
-            loadCards_: function ()   {
+            loadCards_: function ()     {
                 var self = this;
                 var xhr = new XMLHttpRequest();
                 //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=lightning", true)
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=sword", true)
                
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
@@ -177,13 +226,12 @@
             loadDeckCards: function(d)  {
                 var self = this;
                 var xhr = new XMLHttpRequest();
-                var card;
                 
                 xhr.open("GET", "https://api.deckbrew.com/mtg/cards?multiverseid=" + d, true);
                 
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
-                        card = JSON.parse(xhr.responseText);
+                        var card = JSON.parse(xhr.responseText);
                         console.log(card);
                         return card;
                     } else  {
@@ -194,6 +242,32 @@
                 };
                 
                 xhr.send();
+            },
+            
+            loadBooster: function()     {
+                var self = this;
+                var xhr = new XMLHttpRequest();
+                
+                xhr.open("GET", "https://api.magicthegathering.io/v1/sets/ORI/booster", true);
+                
+                xhr.onload = function(evt)   {
+                    if(xhr.status === 200)   {
+                        self.booster = JSON.parse(xhr.responseText);
+                        console.log(self.booster);
+                        self.loading_ = false;
+                    } else  {
+                        self.error_ = true;
+                        self.loading_ = false;
+                        self.ready_ = false;   
+                    }
+                };
+                
+                xhr.send();
+            },
+                           
+            _pickCard: function(e)    {
+                console.log("a card was picked");
+                console.log(e.model._nodes[0].alt);
             },
             
             _viewIsSearch: function (v)  {
