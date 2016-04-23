@@ -38,9 +38,9 @@
                 <template is="dom-if" if="[[_viewIsSearch(view)]]">
                     <div class="search-bar">
                         <h1>MTG Card Fetcher</h1>
-                        <form id="fetch" on-submit="_searchCardsByName">
+                        <form id="search-form" on-submit="_searchCardsByName">
                             <input type="text" id="sf" placeholder="Enter a card name here!">
-                            <button id="f">Fetch</button>
+                            <button id="fetch" on-tap="_searchCardsByName">Fetch</button>
                         </form>
                         <hr />
                     </div>
@@ -67,6 +67,15 @@
                 </template>
                 <template is="dom-if" if="{{_viewIsDeck(view)}}">
                     <h1>Deck Builder</h1>
+                    <table id="decklist">
+                        <template is="dom-repeat" items="[[findCardsInDeck(deck)]]">
+                            <tr>
+                                <td>
+                                    <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
+                                </td>
+                            </tr>
+                        </template>
+                    </table>
                 </template>
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
                     <h1>Draft Simulator</h1>
@@ -86,6 +95,11 @@
                 
                 cards:  {
                     type: Object
+                },
+                
+                deck:   {
+                    type: Array,
+                    value: [393908, 235597, 259695]
                 },
                 
                 view:   {
@@ -115,13 +129,15 @@
            
             attached: function() {
                 console.log("attached");
+                console.log(this.deck);
                 this.loadCards_();
                 
             },
             
             _searchCardsByName: function(e) {
                 e.preventDefault();
-                this.search = "name=" + this.$.sf.value;
+                console.log(this.$$('#sf').value);
+                this.search = "name=" + this.$$('#sf').value;
                 this.loadCards_();
                 
             },
@@ -130,7 +146,7 @@
                 var self = this;
                 var xhr = new XMLHttpRequest();
                 //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=liliana", true)
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=lightning", true)
                
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
@@ -144,6 +160,39 @@
                         self.ready_ = false;   
                     }
                 };
+                xhr.send();
+            },
+            
+            findCardsInDeck: function(d)    {
+                var decklist = [];
+                
+                for(var i = 0; i < d.length; i++)   {
+                    decklist.push(this.loadDeckCards(d[i]));   
+                    console.log(decklist); 
+                }
+                
+                return decklist;
+            },
+            
+            loadDeckCards: function(d)  {
+                var self = this;
+                var xhr = new XMLHttpRequest();
+                var card;
+                
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?multiverseid=" + d, true);
+                
+                xhr.onload = function(evt)   {
+                    if(xhr.status === 200)   {
+                        card = JSON.parse(xhr.responseText);
+                        console.log(card);
+                        return card;
+                    } else  {
+                        self.error_ = true;
+                        self.loading_ = false;
+                        self.ready_ = false;   
+                    }
+                };
+                
                 xhr.send();
             },
             
