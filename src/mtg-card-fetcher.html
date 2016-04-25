@@ -78,20 +78,13 @@
                     <hr />
                     <!--<template is="dom-repeat" items="[[findCardsInDeck(deck)]]">-->
                     <template is="dom-repeat" items="[[cards]]">
-                        <table style="float:left;">
-                            <tr>
-                                <td>
+                            <div id="deck-card" style="float:left;">
                                     <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
+                                    <br />
                                     Number of Cards
                                     <button value="item.editions.0.multiverseid">Add</button>
                                     <button value="item.editions.0.multiverseid">Remove</button>
-                                </td>
-                            </tr>
-                        </table>
+                            </div>
                     </template>
                 </template>
                 <!-- DRAFT VIEW -->
