@@ -25,14 +25,93 @@
             a:visited {
                 color: rgb(220,220,220);
             }
+            table {
+                width: 100%;
+            }
+            div.menu-container a {
+                padding: 20px;
+            }
+            div.card-description-container {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(89, 63, 7, 0.5);
+            }
+            div.card-description-container-gold {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(191, 163, 22, 0.68);
+            }
+            div.card-description-container-white {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgb(100, 100, 100);
+            }
+            div.card-description-container-blue {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(71, 117, 163, 0.68);
+            }
+            div.card-description-container-black {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(10, 10, 10, 0.75);
+            }
+            div.card-description-container-red {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(163, 71, 71, 0.68);
+            }
+            div.card-description-container-green {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgba(117, 163, 71, 0.68);
+            }
+            div.card-text-container {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgb(125, 125, 125);
+            }
+            div.card-data-container {
+                font-size: 12px;
+            }
+            span.card-text {
+                font-weight: bold;
+            }
+            div.card-flavor-container {
+                margin: 10px;
+                padding: 5px;
+                background-color: rgb(125, 125, 125);
+            }
+            span.card-flavor {
+                font-style: italic;
+            }
+            .card-table td:nth-child(1) {
+                width: 15%;
+                vertical-align: top;
+            }
+            .card-table td:nth-child(2) {
+                width: 60%;
+            }
+            .card-table td:nth-child(3) {
+                width: 25%;
+                vertical-align: top;
+                
+            }
+            button.add-to-deck {
+                margin: 10px;
+                padding: 5px;
+            }
         </style>
         <div class="component-container">
             <div class="menu-container">
+                <a href="http://localhost:8080/">
+                    <span>MTG Card Fetcher</span>
+                </a>
                 <a href="{{baseUrl}}search">
-                    <span>Search</span>
+                    <span>Fetch</span>
                 </a>
                 <a href="{{baseUrl}}deck">
-                    <span>Deck Builder</span>
+                    <span>Build</span>
                 </a>
                 <a href="{{baseUrl}}draft">
                     <span>Draft</span>
@@ -43,11 +122,89 @@
                 <!-- SEARCH VIEW -->
                 <template is="dom-if" if="[[_viewIsSearch(view)]]">
                     <div class="search-bar">
-                        <h1>MTG Card Fetcher</h1>
+                        <h1>Fetch</h1>
                         <hr />
                         <form id="search-form" on-submit="_searchCardsByName">
-                            <input type="text" id="sf" placeholder="Enter a card name here!">
-                            <button id="fetch" on-tap="_searchCardsByName">Fetch</button>
+                            <table id = "search-table">
+                                <tr>
+                                    <td>
+                                        <label for="sf">Card Name: </label>
+                                    </td>
+                                    <td>
+                                        <input type="text" id="sf" placeholder="Enter a card name here!">
+                                        <button id="fetch" on-tap="_searchCardsByName">Fetch</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id="advanced-form" value$="hide" style="display:none">
+                                <table id="advanced-table">
+                                    <tr>
+                                        <td>
+                                            <label for="rules-text">Rules Text: </label>
+                                        </td>
+                                        <td>
+                                            <input type="text" id="rules-text">    
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="super-type">Super-Type: </label></td>
+                                        <td><input type="text" id="super-type"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="card-type">Type: </label></td>
+                                        <td><input type="text" id="card-type"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="sub-type">Sub-Type: </label></td>
+                                        <td><input type="text" id="sub-type"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Colors: </td>
+                                        <td>
+                                            <label><input type="checkbox" id="color-box1" value="white"> White</label>
+                                            <label><input type="checkbox" id="color-box2" value="blue"> Blue</label>
+                                            <label><input type="checkbox" id="color-box3" value="black"> Black</label>
+                                            <label><input type="checkbox" id="color-box4" value="red"> Red</label>
+                                            <label><input type="checkbox" id="color-box5" value="green"> Green</label>
+                                            <br>
+                                            (<label><input type="checkbox" id="color-box6" value="mulit"> Multi-Color</label>
+                                            <label><input type="checkbox" id="color-box7" value="selected"> Only Selected)</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rarity:</td>
+                                        <td>
+                                            <label><input type="checkbox" id="rarity-box1" value="mythic"> Mythic</label>
+                                            <label><input type="checkbox" id="rarity-box2" value="rare"> Rare</label>
+                                            <label><input type="checkbox" id="rarity-box3" value="uncommon"> Uncommon</label>
+                                            <label><input type="checkbox" id="rarity-box4" value="Common"> Common</label>
+                                            <label><input type="checkbox" id="rarity-box1" value="basic"> Basic Land</label>
+                                            <label><input type="checkbox" id="rarity-box1" value="special"> Special</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="set">Set:</label></td>
+                                        <td>
+                                            <input type="text" id="set" placeholder="Shorthand Identifier">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label for="format-select">Format: </label></td>
+                                        <td>
+                                            <select id="format-select">
+                                                <option value="none">All Formats</option>
+                                                <option value="standard">Standard</option>
+                                                <option value="modern">Modern</option>
+                                                <option value="legacy">Legacy</option>
+                                                <option value="vintage">Vintage</option>
+                                                <option value="commander">Commander</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <table>
+                            <button id="toggle-form" on-tap="_toggleForm">Toggle Advanced Search</button>
                         </form>
                         <hr />
                     </div>
@@ -55,18 +212,115 @@
                         <p>LOADING...</p>
                     </template>
                     <template is="dom-if" if="[[ready_]]">
-                        <table id="card-list">
-                            <template is="dom-repeat" items="[[cards]]">
+                        <template is="dom-repeat" items="[[cards]]">
+                            <table class="card-table">
                                 <tr>
                                     <td>
-                                        <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
+                                        <img src="{{getCardImage(item.editions)}}" alt="[[item.name]]" />
+                                        <p>Illus. [[getCardArtist(item.editions)]]</p>
                                     </td>
                                     <td>
-                                        <h2>[[item.name]]</h2>
+                                        <div class$="[[getCardColor(item.colors)]]">
+                                            <h2>[[item.name]]</h2>
+                                            <p>
+                                                <template is="dom-repeat" items="[[item.supertypes]]">
+                                                    [[item]]
+                                                </template>
+                                                <template is="dom-repeat" items="[[item.types]]">
+                                                    [[item]]
+                                                </template>
+                                                <template is="dom-if" if="[[item.subtypes]]">
+                                                    - 
+                                                    <template is="dom-repeat" items="[[item.subtypes]]">
+                                                        [[item]]
+                                                    </template>
+                                                </template>
+                                            </p>
+                                            <div class="card-text-container">
+                                                <span class="card-text">[[item.text]]</span>
+                                            </div>
+                                            <template is="dom-if" if="[[hasCardFlavor(item.editions)]]">
+                                                <div class="card-flavor-container">
+                                                    <span class="card-flavor">[[getCardFlavor(item.editions)]]</span>
+                                                </div>
+                                            </template>
+                                            <button class="add-to-deck" on-tap="_addCardToDeck">Add To Deck</button>
+                                        </div>
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="card-data-container">
+                                            <ul>
+                                                <template is="dom-if" if="[[item.loyalty]]">
+                                                    <li>
+                                                        <em>Loyalty:</em> [[item.loyalty]]
+                                                    </li>
+                                                </template>
+                                                <template is="dom-if" if="[[item.power]]">
+                                                    <li>
+                                                        <em>P/T:</em> [[item.power]]/[[item.toughness]]
+                                                    </li>
+                                                </template>
+                                                <li>
+                                                    <template is="dom-if" if="[[item.cost]]">
+                                                        Cost: [[item.cost]]
+                                                    </template>
+                                                    <template is="dom-if" if="[[!item.cost]]">
+                                                        Cost: 0
+                                                    </template>
+                                                </li>
+                                                <li>
+                                                    <em>CMC:</em> [[item.cmc]]
+                                                </li>
+                                                <br />
+                                                <li>
+                                                    Editions:
+                                                    <ul>
+                                                        <template is="dom-repeat" items="[[item.editions]]">
+                                                            <li>
+                                                                [[item.set]] - [[item.set_id]] ([[item.rarity]])
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </li>
+                                                <br />
+                                                <li>
+                                                    Legal Formats:
+                                                    <ul>
+                                                        <template is="dom-if" if="[[item.formats.standard]]">
+                                                            <li>
+                                                                standard - [[item.formats.standard]]
+                                                            </li>
+                                                        </template>
+                                                        <template is="dom-if" if="[[item.formats.modern]]">
+                                                            <li>
+                                                                modern - [[item.formats.modern]]
+                                                            </li>
+                                                        </template>
+                                                        <template is="dom-if" if="[[item.formats.legacy]]">
+                                                            <li>
+                                                                legacy - [[item.formats.legacy]]
+                                                            </li>
+                                                        </template>
+                                                        <template is="dom-if" if="[[item.formats.vintage]]">
+                                                            <li>
+                                                                vintage - [[item.formats.vintage]]
+                                                            </li>
+                                                        </template>
+                                                        <template is="dom-if" if="[[item.formats.commander]]">
+                                                            <li>
+                                                                commander - [[item.formats.commander]]
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </td>
                                 </tr>
-                            </template>
-                        </table>
+                                <hr />
+                            </table>
+                        </template>
                     </template>
                     <template is="dom-if" if="[[error_]]">
                         <h1>AN ERROR HAS OCCURED</h1>
@@ -74,7 +328,7 @@
                 </template>
                 <!-- DECK BUILDER VIEW -->
                 <template is="dom-if" if="{{_viewIsDeck(view)}}">
-                    <h1>Deck Builder</h1>
+                    <h1>Build</h1>
                     <hr />
                     <!--<template is="dom-repeat" items="[[findCardsInDeck(deck)]]">-->
                     <template is="dom-repeat" items="[[cards]]">
@@ -89,7 +343,7 @@
                 </template>
                 <!-- DRAFT VIEW -->
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
-                    <h1>Draft Simulator</h1>
+                    <h1>Draft</h1>
                     <hr />
                     <form id="draft-form" on-submit="_getBooster">
                         <select id="draft-select">
@@ -105,9 +359,14 @@
                     </form>
                     <hr />
                     <h2>Booster Contents</h2>
-                    <template is="dom-repeat" items="[[booster.cards]]">
-                        <img src="[[item.imageUrl]]" alt="[[item.name]]" on-tap="_pickCard"/>
-                        
+                    <template is="dom-if" if="[[loading_]]">
+                        LOADING BOOSTER...
+                    </template>
+                    <template is="dom-if" if="[[ready_]]">
+                        <template is="dom-repeat" items="[[booster.cards]]">
+                            <img src="[[item.imageUrl]]" alt="[[item.name]]" on-tap="_pickCard"/>
+                            
+                        </template>
                     </template>
                     <hr />
                     <h2>Selected Cards</h2>
@@ -134,8 +393,8 @@
                 },
                 
                 deck:   {
-                    type: Object,
-                    value: [393908, 235597, 259695]
+                    type: Array,
+                    value: []
                 },
                 
                 view:   {
@@ -166,12 +425,13 @@
             attached: function() {
                 console.log("attached");
                 console.log(this.deck);
-                this.loadCards_();
-                this.loadBooster();
+                //this.loadCards_();
+                //this.loadBooster();
             },
             
             _searchCardsByName: function(e) {
                 e.preventDefault();
+                this.ready_ = false;
                 this.loading_ = true;
                 this.search = "name=" + this.$$('#sf').value;
                 this.loadCards_();
@@ -180,15 +440,36 @@
             
             _getBooster: function (e)    {
                 e.preventDefault();
+                this.ready_ = false;
                 this.loading_ = true;
-                console.log(this.$$('#draft-select').value);
+                var set = this.$$('#draft-select').value;
+                this.loadBooster(set);
+            },
+            
+            _toggleForm: function(e)    {
+                e.preventDefault();
+                console.log(this.$$('#advanced-form'));
+                console.log(this.$$('#advanced-form').value);
+                console.log(this.$$('#advanced-form').style);
+                /*
+                if(this.$$('#advanced-form').value  === "hide")
+                {
+                    this.$$('#advanced-form').style = "display:block";
+                    this.$$('#advanced-form').value = "show";
+                }
+                else
+                {
+                    this.$$('#advanced-form').style = "display:hidden";
+                    this.$$('#advanced-form').value = "hide";
+                }
+                console.log(this.$$('#advanced-form').value);*/
             },
            
             loadCards_: function ()     {
                 var self = this;
                 var xhr = new XMLHttpRequest();
-                //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=sword", true)
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
+                //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=sword", true)
                
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
@@ -237,17 +518,18 @@
                 xhr.send();
             },
             
-            loadBooster: function()     {
+            loadBooster: function(set)     {
                 var self = this;
                 var xhr = new XMLHttpRequest();
                 
-                xhr.open("GET", "https://api.magicthegathering.io/v1/sets/ORI/booster", true);
+                xhr.open("GET", "https://api.magicthegathering.io/v1/sets/" + set + "/booster", true);
                 
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
                         self.booster = JSON.parse(xhr.responseText);
                         console.log(self.booster);
                         self.loading_ = false;
+                        self.ready_ = true;
                     } else  {
                         self.error_ = true;
                         self.loading_ = false;
@@ -259,8 +541,41 @@
             },
                            
             _pickCard: function(e)    {
+                console.log(e);
                 console.log("a card was picked");
                 console.log(e.model._nodes[0].alt);
+            },
+            
+            _addCardToDeck: function(e) {
+                var id = 0;
+                for(var i = 0; i < e.model.__data__.item.editions.length; i++)
+                {
+                    if(e.model.__data__.item.editions[i].multiverse_id != 0)
+                    {
+                        id = e.model.__data__.item.editions[i].multiverse_id;
+                        break;
+                    }
+                }
+                
+                var inDeck = false;
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    if(this.deck[i].multiverse_id == id)
+                    {
+                        inDeck = true;
+                        break;
+                    }
+                }
+                if(!inDeck) 
+                {
+                    var card = {
+                        multiverse_id: id,
+                        amount: 1
+                    };
+                
+                    this.deck.push(card);
+                }
+                console.log(this.deck);
             },
             
             _viewIsSearch: function (v)  {
@@ -273,7 +588,83 @@
             
             _viewIsDraft: function (v)  {
                 return v === 'draft';
-            }
+            },
+            
+            getCardImage: function (editions) {
+                for(var i = 0; i < editions.length; i++)    
+                {
+                    if(editions[i].image_url && editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg")
+                    {
+                        return editions[i].image_url;
+                    }
+                }
+            },
+            
+            getCardArtist: function(editions) {
+                for(var i = 0; i < editions.length; i++)    
+                {
+                    if(editions[i].image_url && editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg")
+                    {
+                        return editions[i].artist;
+                    }
+                }
+            },
+            
+            getCardFlavor: function(editions) {
+                for(var i = 0; i < editions.length; i++)    
+                {
+                    if(editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg")
+                    {
+                        return editions[i].flavor;
+                    }
+                }
+            },
+            
+            hasCardFlavor: function(editions) {
+                for(var i = 0; i < editions.length; i++)    
+                {
+                    if(editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg" && editions[i].flavor)
+                    {
+                        return true;
+                    }
+                }
+                
+                return false;
+            },
+            
+            getCardColor: function(colors) {
+                
+                if(colors == undefined)
+                {
+                    return "card-description-container";
+                }
+                else if(colors.length > 1)
+                {
+                    return "card-description-container-gold";
+                }
+                else if(colors[0] === "white")
+                {
+                    return "card-description-container-white";
+                }
+                else if(colors[0] === "blue")
+                {
+                    return "card-description-container-blue";
+                }
+                else if(colors[0] === "black")
+                {
+                    return "card-description-container-black";
+                }
+                else if(colors[0] === "red")
+                {
+                    return "card-description-container-red";
+                }
+                else if(colors[0] === "green")
+                {
+                    return "card-description-container-green";
+                }
+            },
+            
+            
         });
     </script>
 </dom-module>
