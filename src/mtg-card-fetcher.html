@@ -28,6 +28,31 @@
             table {
                 width: 100%;
             }
+            #search-table td:nth-child(1) {
+                width: 10%;
+            }
+            #search-table td:nth-child(2) {
+                width: 90%;
+            }
+            #advanced-table td:nth-child(1) {
+                width: 10%;
+            }
+            #advanced-table td:nth-child(2) {
+                width: 90%;
+            }
+            #deck-container {
+                width: 70%;
+                float: left;
+            }
+            #deck-stats {
+                width: 30%;
+                float: right;
+                vertical-align: top;
+            }
+            div.deck-card {
+                margin: 15px;
+                float: left;
+            }
             div.menu-container a {
                 padding: 20px;
             }
@@ -119,24 +144,28 @@
             </div>
             <hr />
             <div class="content">
-                <!-- SEARCH VIEW -->
+                <!-- 
+                    -------------------
+                        SEARCH VIEW
+                    ------------------- 
+                                       --->
                 <template is="dom-if" if="[[_viewIsSearch(view)]]">
-                    <div class="search-bar">
+                    <div class="search-div">
                         <h1>Fetch</h1>
                         <hr />
-                        <form id="search-form" on-submit="_searchCardsByName">
+                        <form id="search-form" on-submit="_searchForCards">
                             <table id = "search-table">
                                 <tr>
                                     <td>
-                                        <label for="sf">Card Name: </label>
+                                        <label for="search-field">Card Name: </label>
                                     </td>
                                     <td>
-                                        <input type="text" id="sf" placeholder="Enter a card name here!">
-                                        <button id="fetch" on-tap="_searchCardsByName">Fetch</button>
+                                        <input type="text" id="search-field" placeholder="Enter a card name here!">
+                                        <button id="fetch" on-tap="_searchForCards">Fetch</button>
                                     </td>
                                 </tr>
                             </table>
-                            <div id="advanced-form" value$="hide" style="display:none">
+                            <div id="advanced-div" style="display:none;">
                                 <table id="advanced-table">
                                     <tr>
                                         <td>
@@ -161,25 +190,24 @@
                                     <tr>
                                         <td>Colors: </td>
                                         <td>
-                                            <label><input type="checkbox" id="color-box1" value="white"> White</label>
-                                            <label><input type="checkbox" id="color-box2" value="blue"> Blue</label>
-                                            <label><input type="checkbox" id="color-box3" value="black"> Black</label>
-                                            <label><input type="checkbox" id="color-box4" value="red"> Red</label>
-                                            <label><input type="checkbox" id="color-box5" value="green"> Green</label>
+                                            <label><input type="checkbox" id="color-white" value="white"> White</label>
+                                            <label><input type="checkbox" id="color-blue" value="blue"> Blue</label>
+                                            <label><input type="checkbox" id="color-black" value="black"> Black</label>
+                                            <label><input type="checkbox" id="color-red" value="red"> Red</label>
+                                            <label><input type="checkbox" id="color-green" value="green"> Green</label>
                                             <br>
-                                            (<label><input type="checkbox" id="color-box6" value="mulit"> Multi-Color</label>
-                                            <label><input type="checkbox" id="color-box7" value="selected"> Only Selected)</label>
+                                            (<label><input type="checkbox" id="color-multi" value="true"> Multi-Color)</label>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Rarity:</td>
                                         <td>
-                                            <label><input type="checkbox" id="rarity-box1" value="mythic"> Mythic</label>
-                                            <label><input type="checkbox" id="rarity-box2" value="rare"> Rare</label>
-                                            <label><input type="checkbox" id="rarity-box3" value="uncommon"> Uncommon</label>
-                                            <label><input type="checkbox" id="rarity-box4" value="Common"> Common</label>
-                                            <label><input type="checkbox" id="rarity-box1" value="basic"> Basic Land</label>
-                                            <label><input type="checkbox" id="rarity-box1" value="special"> Special</label>
+                                            <label><input type="checkbox" id="rarity-mythic" value="mythic"> Mythic</label>
+                                            <label><input type="checkbox" id="rarity-rare" value="rare"> Rare</label>
+                                            <label><input type="checkbox" id="rarity-uncommon" value="uncommon"> Uncommon</label>
+                                            <label><input type="checkbox" id="rarity-common" value="Common"> Common</label>
+                                            <label><input type="checkbox" id="rarity-basic" value="basic"> Basic Land</label>
+                                            <label><input type="checkbox" id="rarity-special" value="special"> Special</label>
                                         </td>
                                     </tr>
                                     <tr>
@@ -192,7 +220,7 @@
                                         <td><label for="format-select">Format: </label></td>
                                         <td>
                                             <select id="format-select">
-                                                <option value="none">All Formats</option>
+                                                <option value="">All Formats</option>
                                                 <option value="standard">Standard</option>
                                                 <option value="modern">Modern</option>
                                                 <option value="legacy">Legacy</option>
@@ -326,22 +354,67 @@
                         <h1>AN ERROR HAS OCCURED</h1>
                     </template>
                 </template>
-                <!-- DECK BUILDER VIEW -->
+                <!-- 
+                    -------------------------
+                        DECK BUILDER VIEW 
+                    -------------------------
+                                             --->
                 <template is="dom-if" if="{{_viewIsDeck(view)}}">
                     <h1>Build</h1>
                     <hr />
-                    <!--<template is="dom-repeat" items="[[findCardsInDeck(deck)]]">-->
-                    <template is="dom-repeat" items="[[cards]]">
-                            <div id="deck-card" style="float:left;">
-                                    <img src="[[item.editions.0.image_url]]" alt="[[item.name]]" />
-                                    <br />
-                                    Number of Cards
-                                    <button value="item.editions.0.multiverseid">Add</button>
-                                    <button value="item.editions.0.multiverseid">Remove</button>
-                            </div>
+                    <div id="deck-container">
+                    <template id="deck-template" is="dom-repeat" items="[[deck]]" filter="filterDeck" observe="type deck.amount">
+                        <div class="deck-card">
+                                <img src="[[getCardImage(item.card.editions)]]" alt="[[item.card.name]]" />
+                                <br />
+                                <button class="remove-card" value="[[item.card.name]]" on-tap="_removeCard">Remove</button>
+                                <span id="card-amount">{{item.amount}}</span>
+                                <button class="add-card" value="[[item.card.name]]" on-tap="_addCard">Add</button>
+                        </div>
                     </template>
+                    </div>
+                    <div id="deck-stats">
+                        <ul>
+                            <li>Cards in Deck: [[deck.length]]</li>
+                            <br />
+                            <li>Colors of Cards: 
+                                <ul>
+                                    <template is="dom-repeat" items="[[getDeckColors()]]" filter="filterColor">
+                                        <li>[[item.color]]: [[item.amount]]</li>
+                                    </template>
+                                </ul>
+                            </li>
+                            <br />
+                            <li>Card Types: 
+                                <ul>
+                                    <template is="dom-repeat" items="[[getDeckTypes()]]" filter="filterType">
+                                        <li>[[item.type]]: [[item.amount]]</li>
+                                    </template>
+                                </ul>
+                            </li>
+                            <br />
+                            <li>
+                                Average Converted Mana Cost: [[getDeckAverageCMC()]]
+                            </li>
+                            <br />
+                            <li>Converted Mana Cost: 
+                                <ul>
+                                    <template is="dom-repeat" items="[[getDeckCMC()]]" filter="filterCMC">
+                                        <li>[[index]]: [[item]]</li>
+                                    </template>
+                                </ul>
+                            </li>
+                       
+                        </ul>
+                        
+                        
+                    </div>
                 </template>
-                <!-- DRAFT VIEW -->
+                <!-- 
+                    ------------------
+                        DRAFT VIEW 
+                    ------------------
+                                      --->
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
                     <h1>Draft</h1>
                     <hr />
@@ -379,9 +452,19 @@
             is: "mtg-card-fetcher",
            
             properties: {
-                search: {
-                    type: String,
-                    value: ""
+                params: {
+                    type: Array,
+                    value: ["search-field","rules-text","super-type","card-type","sub-type",
+                            "color-white","color-blue","color-black","color-red","color-green",
+                            "color-multi","rarity-mythic","rarity-rare","rarity-uncommon",
+                            "rarity-common","rarity-basic","rarity-special","set","format-select"]
+                },
+                
+                filters: {
+                    type: Array,
+                    value: ["name=","oracle=","supertype=","type=","subtype=","color=","color=",
+                            "color=","color=","color=","multicolor=","rarity=","rarity=","rarity=",
+                            "rarity=","rarity=","rarity=","set=","format="]
                 },
                 
                 cards:  {
@@ -417,25 +500,41 @@
                     value: false
                 }
             }, 
-            
-            listeners:  {
-                //"fetch.click": 'searchCardsByName'
-            },
            
             attached: function() {
                 console.log("attached");
-                console.log(this.deck);
-                //this.loadCards_();
-                //this.loadBooster();
             },
             
-            _searchCardsByName: function(e) {
+            _searchForCards: function(e) {
                 e.preventDefault();
                 this.ready_ = false;
                 this.loading_ = true;
-                this.search = "name=" + this.$$('#sf').value;
-                this.loadCards_();
-                
+                this.error_ = false;
+                var search = "";
+                for(var i = 0; i < this.params.length; i++)
+                {
+                    if(this.$$('#' + this.params[i]).type !== "checkbox" && this.$$('#' + this.params[i]).value !== "")
+                    {
+                        if(i > 0 && search !== "")
+                        {
+                            search = search + "&";
+                        }
+                        search = search + this.filters[i];
+                        search = search + this.$$('#' + this.params[i]).value;
+                    }
+                    else if(this.$$('#' + this.params[i]).type === "checkbox" && this.$$('#' + this.params[i]).checked)
+                    {
+                        if(i > 0 && search !== "")
+                        {
+                            search = search + "&";
+                        }
+                        
+                        search = search + this.filters[i];
+                        search = search + this.$$('#' + this.params[i]).value;
+                    }
+                    
+                }
+                this.loadCards_(search);
             },
             
             _getBooster: function (e)    {
@@ -448,33 +547,124 @@
             
             _toggleForm: function(e)    {
                 e.preventDefault();
-                console.log(this.$$('#advanced-form'));
-                console.log(this.$$('#advanced-form').value);
-                console.log(this.$$('#advanced-form').style);
-                /*
-                if(this.$$('#advanced-form').value  === "hide")
+                if(this.$$('#advanced-div').style.cssText  === "display: none;")
                 {
-                    this.$$('#advanced-form').style = "display:block";
-                    this.$$('#advanced-form').value = "show";
+                    this.$$('#advanced-div').style.cssText = "display: block";
+                }
+                else if(this.$$('#advanced-div').style.cssText  === "display: block;")
+                {
+                    this.$$('#advanced-div').style.cssText = "display: none";
+                }
+            },
+            
+            _addCard: function(e)   {
+                e.preventDefault();
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    if(e.model.__data__.item.card.name === this.deck[i].card.name)
+                    {
+                        this.deck[i].amount++;
+                        console.log(this.deck[i].card.name + " , " + this.deck[i].amount);
+                        
+                    }
+                }     
+            },
+            
+            _removeCard: function(e)    {
+                e.preventDefault();
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    if(e.model.__data__.item.card.name === this.deck[i].card.name)
+                    {
+                        this.deck[i].amount--;
+                        console.log(this.deck[i].card.name + " , " + this.deck[i].amount);
+                        if(this.deck[i].amount === 0)
+                        {
+                            this.deck.splice(i,1);
+                        }
+                        console.log(this.deck);
+                        
+                    }
+                }     
+            },
+            
+            filterDeck: function(item) {
+                return true;
+            },
+            
+            filterColor: function(item) {
+                if(item.amount > 0)
+                {
+                    return true;
                 }
                 else
                 {
-                    this.$$('#advanced-form').style = "display:hidden";
-                    this.$$('#advanced-form').value = "hide";
+                    return false;
+                }  
+            },
+            
+            filterType: function(item) {
+                if(item.amount > 0)
+                {
+                    return true;
                 }
-                console.log(this.$$('#advanced-form').value);*/
+                else
+                {
+                    return false;
+                }
+            },
+            
+            filterCMC: function(item) {
+                if(item > 0)
+                {
+                    return true;
+                }  
+                else
+                {
+                    return false;
+                }
+            },
+            
+            _pickCard: function(e)    {
+                console.log(e);
+                console.log("a card was picked");
+                console.log(e.model._nodes[0].alt);
+            },
+            
+            _addCardToDeck: function(e) {
+                //take card from clicked event and add it to deck
+                e.preventDefault();
+                var id = 0;
+                
+                var inDeck = false;
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    if(this.deck[i].card.name == e.model.__data__.item.name)
+                    {
+                        inDeck = true;
+                        break;
+                    }
+                }
+                if(!inDeck) 
+                {
+                    var card = {
+                        card: e.model.__data__.item,
+                        amount: 1
+                    };
+                
+                    this.deck.push(card);
+                }
+                console.log(this.deck);
             },
            
-            loadCards_: function ()     {
+            loadCards_: function (search)     {
                 var self = this;
                 var xhr = new XMLHttpRequest();
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + this.search, true);
-                //xhr.open("GET", "https://api.deckbrew.com/mtg/cards?name=sword", true)
+                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?" + search, true);
                
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
                         self.cards = JSON.parse(xhr.responseText);
-                        console.log(self.cards);
                         self.loading_ = false;
                         self.ready_ = true;
                     } else  {
@@ -483,38 +673,6 @@
                         self.ready_ = false;   
                     }
                 };
-                xhr.send();
-            },
-            
-            findCardsInDeck: function(d)    {
-                var decklist = [];
-                
-                for(var i = 0; i < d.length; i++)   {
-                    decklist.push(this.loadDeckCards(d[i]));   
-                    console.log(decklist); 
-                }
-                
-                return decklist;
-            },
-            
-            loadDeckCards: function(d)  {
-                var self = this;
-                var xhr = new XMLHttpRequest();
-                
-                xhr.open("GET", "https://api.deckbrew.com/mtg/cards?multiverseid=" + d, true);
-                
-                xhr.onload = function(evt)   {
-                    if(xhr.status === 200)   {
-                        var card = JSON.parse(xhr.responseText);
-                        console.log(card);
-                        return card;
-                    } else  {
-                        self.error_ = true;
-                        self.loading_ = false;
-                        self.ready_ = false;   
-                    }
-                };
-                
                 xhr.send();
             },
             
@@ -540,44 +698,6 @@
                 xhr.send();
             },
                            
-            _pickCard: function(e)    {
-                console.log(e);
-                console.log("a card was picked");
-                console.log(e.model._nodes[0].alt);
-            },
-            
-            _addCardToDeck: function(e) {
-                var id = 0;
-                for(var i = 0; i < e.model.__data__.item.editions.length; i++)
-                {
-                    if(e.model.__data__.item.editions[i].multiverse_id != 0)
-                    {
-                        id = e.model.__data__.item.editions[i].multiverse_id;
-                        break;
-                    }
-                }
-                
-                var inDeck = false;
-                for(var i = 0; i < this.deck.length; i++)
-                {
-                    if(this.deck[i].multiverse_id == id)
-                    {
-                        inDeck = true;
-                        break;
-                    }
-                }
-                if(!inDeck) 
-                {
-                    var card = {
-                        multiverse_id: id,
-                        amount: 1
-                    };
-                
-                    this.deck.push(card);
-                }
-                console.log(this.deck);
-            },
-            
             _viewIsSearch: function (v)  {
                 return v === 'search';
             },
@@ -600,7 +720,7 @@
                 }
             },
             
-            getCardArtist: function(editions) {
+            getCardArtist: function (editions) {
                 for(var i = 0; i < editions.length; i++)    
                 {
                     if(editions[i].image_url && editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg")
@@ -610,7 +730,7 @@
                 }
             },
             
-            getCardFlavor: function(editions) {
+            getCardFlavor: function (editions) {
                 for(var i = 0; i < editions.length; i++)    
                 {
                     if(editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg")
@@ -620,7 +740,7 @@
                 }
             },
             
-            hasCardFlavor: function(editions) {
+            hasCardFlavor: function (editions) {
                 for(var i = 0; i < editions.length; i++)    
                 {
                     if(editions[i].image_url !== "https://image.deckbrew.com/mtg/multiverseid/0.jpg" && editions[i].flavor)
@@ -632,7 +752,7 @@
                 return false;
             },
             
-            getCardColor: function(colors) {
+            getCardColor: function (colors) {
                 
                 if(colors == undefined)
                 {
@@ -664,6 +784,185 @@
                 }
             },
             
+            getDeckColors: function () {
+                //return an array with the number of cards of each color in the deck
+                var colorArray = [
+                    {color:"white",amount:0},
+                    {color:"blue",amount:0},
+                    {color:"black",amount:0},
+                    {color:"red",amount:0},
+                    {color:"green",amount:0},
+                    {color:"colorless",amount:0}                  
+                ];
+                
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    if(this.deck[i].card.colors === undefined)
+                    {
+                        colorArray[5].amount++;
+                    }
+                    else
+                    {
+                        for(var j = 0; j < this.deck[i].card.colors.length; j++)
+                        {
+                            if(this.deck[i].card.colors[j] === "white")
+                            {
+                                colorArray[0].amount++;
+                            }
+                            else if(this.deck[i].card.colors[j] === "blue")
+                            {
+                                colorArray[1].amount++;
+                            }
+                            else if(this.deck[i].card.colors[j] === "black")
+                            {
+                                colorArray[2].amount++;
+                            }
+                            else if(this.deck[i].card.colors[j] === "red")
+                            {
+                                colorArray[3].amount++;
+                            }
+                            else if(this.deck[i].card.colors[j] === "green")
+                            {
+                                colorArray[4].amount++;
+                            }
+                        }
+                    }
+                }
+                
+                return colorArray;
+            },
+            
+            getDeckTypes: function () {
+                //return an array of the number of cards of each type in the deck
+                var typeArray = [
+                    {type:"artifact",amount:0},
+                    {type:"creature",amount:0},
+                    {type:"enchantment",amount:0},
+                    {type:"instant",amount:0},
+                    {type:"land",amount:0},
+                    {type:"phenomenon",amount:0},
+                    {type:"plane",amount:0},
+                    {type:"planeswalker",amount:0},
+                    {type:"scheme",amount:0},
+                    {type:"sorcery",amount:0},
+                    {type:"tribal",amount:0},
+                    {type:"vanguard",amount:0}    
+                ];
+                
+                for(var i = 0; i < this.deck.length; i++)
+                {    
+                    for(var j = 0; j < this.deck[i].card.types.length; j++)
+                    {
+                        if(this.deck[i].card.types[j] === "artifact")
+                        {
+                            typeArray[0].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "creature")
+                        {
+                            typeArray[1].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "enchantment")
+                        {
+                            typeArray[2].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "instant")
+                        {
+                            typeArray[3].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "land")
+                        {
+                            typeArray[4].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "phenomenon")
+                        {
+                            typeArray[5].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "plane")
+                        {
+                            typeArray[6].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "planeswalker")
+                        {
+                            typeArray[7].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "scheme")
+                        {
+                            typeArray[8].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "sorcery")
+                        {
+                            typeArray[9].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "tribal")
+                        {
+                            typeArray[10].amount++;
+                        }
+                        else if(this.deck[i].card.types[j] === "vanguard")
+                        {
+                            typeArray[11].amount++;
+                        }
+                        
+                    }
+                }   
+                
+                return typeArray;
+            },
+            
+            getDeckCMC: function () {
+                //return an array of the number of cards of each Converted Mana Cost in the deck
+                console.log("CMC");
+                var cmcArray = [];
+                
+                for(var i = 0; i <= 16; i++)
+                {
+                    cmcArray[i] = 0;
+                }
+                
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    cmcArray[this.deck[i].card.cmc]++;
+                }
+                
+                console.log(cmcArray);
+                
+                return cmcArray;
+            },
+            
+            getDeckAverageCMC: function () {
+                //get average Converted Mana Cost of cards in deck
+                var average = 0;
+                
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    average += this.deck[i].card.cmc;
+                }
+                
+                return average/this.deck.length;
+            },
+            
+            storeDeck: function () {
+                //put deck into local storage
+                if(typeof(Storage) !== "undefined") 
+                {
+                    localStorage.setItem("deck", JSON.stringify(this.deck));
+                }
+                else
+                {
+                    console.log("This browser doesn't support Local Storage");
+                }
+            },
+            
+            retrieveDeck: function () {
+                //retrieve deck from local storage
+                if(typeof(Storage) !== "undefined") 
+                {
+                    this.deck = JSON.parse(localStorage.getItem("deck"));
+                }
+                else
+                {
+                    console.log("This browser doesn't support Local Storage");
+                }
+            }
             
         });
     </script>
