@@ -407,9 +407,8 @@
                                     </template>
                                 </ul>
                             </li>
-                       
                         </ul>
-                        
+                        <button class="clear-deck" on-tap="_clearDeck">Clear Deck</button>
                         
                     </div>
                 </template>
@@ -511,6 +510,7 @@
            
             attached: function() {
                 console.log("attached");
+                this.retrieveDeck();
             },
             
             _searchForCards: function(e) {
@@ -572,6 +572,7 @@
                     if(e.model.__data__.item.card.name === this.deck[i].card.name)
                     {
                         this.set('deck.' + i + '.amount', this.deck[i].amount + 1);
+                        this.storeDeck();
                         this.updateStats();
                         //this.set('stats.numCards', this.stats.numCards + 1); 
                         
@@ -591,6 +592,7 @@
                         {
                             this.splice('deck',i,1);
                         }
+                        this.storeDeck();
                         this.updateStats();
                     }
                 }     
@@ -639,6 +641,12 @@
                 console.log(e.model._nodes[0].alt);
             },
             
+            _clearDeck: function(e) {
+                this.splice('deck', 0, this.deck.length+1);
+                localStorage.clear();
+                this.updateStats();
+            },
+            
             _addCardToDeck: function(e) {
                 //take card from clicked event and add it to deck
                 e.preventDefault();
@@ -661,6 +669,7 @@
                     };
                 
                     this.push('deck', card);
+                    this.storeDeck();
                     this.updateStats();            
                 }
                 console.log(this.deck);
@@ -1068,7 +1077,15 @@
                 //retrieve deck from local storage
                 if(typeof(Storage) !== "undefined") 
                 {
-                    this.deck = JSON.parse(localStorage.getItem("deck"));
+                    if(localStorage.getItem("deck") === null)
+                    {
+                        console.log("No deck in Local Storage");
+                    }
+                    else
+                    {
+                        this.deck = JSON.parse(localStorage.getItem("deck"));
+                        console.log("Deck Loaded from Local Storage");
+                    }
                 }
                 else
                 {
