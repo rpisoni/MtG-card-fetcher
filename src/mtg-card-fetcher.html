@@ -48,6 +48,7 @@
                 width: 30%;
                 float: right;
                 vertical-align: top;
+                background-color: rgb(125, 125, 125);
             }
             div.deck-card {
                 margin: 15px;
@@ -375,11 +376,11 @@
                     </div>
                     <div id="deck-stats">
                         <ul>
-                            <li>Cards in Deck: [[deck.length]]</li>
+                            <li>Cards in Deck: [[numcards]] stats: [[stats.numCards]]</li>
                             <br />
                             <li>Colors of Cards: 
                                 <ul>
-                                    <template is="dom-repeat" items="[[getDeckColors()]]" filter="filterColor">
+                                    <template is="dom-repeat" items="[[getColorArray(stats.colors)]]" filter="filterColor">
                                         <li>[[item.color]]: [[item.amount]]</li>
                                     </template>
                                 </ul>
@@ -387,20 +388,22 @@
                             <br />
                             <li>Card Types: 
                                 <ul>
-                                    <template is="dom-repeat" items="[[getDeckTypes()]]" filter="filterType">
+                                    <template is="dom-repeat" items="[[getTypeArray(stats.types)]]" filter="filterType">
                                         <li>[[item.type]]: [[item.amount]]</li>
                                     </template>
                                 </ul>
                             </li>
                             <br />
                             <li>
-                                Average Converted Mana Cost: [[getDeckAverageCMC()]]
+                                Average Converted Mana Cost: [[stats.averageCMC]]
                             </li>
                             <br />
-                            <li>Converted Mana Cost: 
+                            <li>Mana Curve: 
                                 <ul>
-                                    <template is="dom-repeat" items="[[getDeckCMC()]]" filter="filterCMC">
-                                        <li>[[index]]: [[item]]</li>
+                                    <template is="dom-repeat" items="[[getCMCArray(stats.cmcList)]]" >
+                                        <template is="dom-if" if="[[hasCMC(item)]]">
+                                            <li>[[index]]: [[item]]</li>
+                                        </template>
                                     </template>
                                 </ul>
                             </li>
@@ -478,6 +481,11 @@
                 deck:   {
                     type: Array,
                     value: []
+                },
+                
+                stats:  {
+                    type: Object,
+                    value: {numCards: 0, colors: {}, types: {}, cmcList: {}, averageCMC: 0 }
                 },
                 
                 view:   {
@@ -563,8 +571,9 @@
                 {
                     if(e.model.__data__.item.card.name === this.deck[i].card.name)
                     {
-                        this.deck[i].amount++;
-                        console.log(this.deck[i].card.name + " , " + this.deck[i].amount);
+                        this.set('deck.' + i + '.amount', this.deck[i].amount + 1);
+                        this.updateStats();
+                        //this.set('stats.numCards', this.stats.numCards + 1); 
                         
                     }
                 }     
@@ -576,14 +585,13 @@
                 {
                     if(e.model.__data__.item.card.name === this.deck[i].card.name)
                     {
-                        this.deck[i].amount--;
-                        console.log(this.deck[i].card.name + " , " + this.deck[i].amount);
+                        this.set('deck.' + i + '.amount', this.deck[i].amount - 1);
+                        //this.set('stats.numCards', this.stats.numCards - 1); 
                         if(this.deck[i].amount === 0)
                         {
-                            this.deck.splice(i,1);
+                            this.splice('deck',i,1);
                         }
-                        console.log(this.deck);
-                        
+                        this.updateStats();
                     }
                 }     
             },
@@ -652,7 +660,8 @@
                         amount: 1
                     };
                 
-                    this.deck.push(card);
+                    this.push('deck', card);
+                    this.updateStats();            
                 }
                 console.log(this.deck);
             },
@@ -708,6 +717,52 @@
             
             _viewIsDraft: function (v)  {
                 return v === 'draft';
+            },
+            
+            updateStats: function() {
+                  
+                  this.updateNumCards();
+                  this.updateColors();
+                  this.updateTypes();
+                  this.updateAverageCMC();
+                  this.updateCMC();
+            },
+            
+            updateNumCards: function()  {
+                var cardCount = 0; 
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    cardCount += this.deck[i].amount;
+                }  
+                
+                this.set('stats.numCards', cardCount);
+            },
+            
+            updateColors: function() {
+                this.set('stats.colors', this.getDeckColors());
+            },
+            
+            updateTypes: function() {
+                this.set('stats.types', this.getDeckTypes());
+            },
+            
+            updateAverageCMC: function () {
+                var totalCMC = 0;
+                var cardCount = 0;
+                for(var i = 0; i < this.deck.length; i++)
+                {
+                    cardCount += this.deck[i].amount;
+                    if(this.deck[i].card.cmc !== undefined)
+                    {
+                        totalCMC += (this.deck[i].card.cmc * this.deck[i].amount)
+                    }
+                }
+                
+                this.set('stats.averageCMC', (totalCMC / cardCount).toFixed(2));
+            },
+            
+            updateCMC: function () {
+                this.set('stats.cmcList', this.getDeckCMC());  
             },
             
             getCardImage: function (editions) {
@@ -786,20 +841,20 @@
             
             getDeckColors: function () {
                 //return an array with the number of cards of each color in the deck
-                var colorArray = [
-                    {color:"white",amount:0},
-                    {color:"blue",amount:0},
-                    {color:"black",amount:0},
-                    {color:"red",amount:0},
-                    {color:"green",amount:0},
-                    {color:"colorless",amount:0}                  
-                ];
+                var colors = {
+                    white: 0,
+                    blue: 0,
+                    black: 0,
+                    red: 0,
+                    green: 0,
+                    colorless: 0                  
+                };
                 
                 for(var i = 0; i < this.deck.length; i++)
                 {
                     if(this.deck[i].card.colors === undefined)
                     {
-                        colorArray[5].amount++;
+                        colors.colorless += this.deck[i].amount;
                     }
                     else
                     {
@@ -807,47 +862,61 @@
                         {
                             if(this.deck[i].card.colors[j] === "white")
                             {
-                                colorArray[0].amount++;
+                                colors.white += this.deck[i].amount;
                             }
                             else if(this.deck[i].card.colors[j] === "blue")
                             {
-                                colorArray[1].amount++;
+                                colors.blue += this.deck[i].amount;
                             }
                             else if(this.deck[i].card.colors[j] === "black")
                             {
-                                colorArray[2].amount++;
+                                colors.black += this.deck[i].amount;
                             }
                             else if(this.deck[i].card.colors[j] === "red")
                             {
-                                colorArray[3].amount++;
+                                colors.red += this.deck[i].amount;
                             }
                             else if(this.deck[i].card.colors[j] === "green")
                             {
-                                colorArray[4].amount++;
+                                colors.green += this.deck[i].amount;
                             }
                         }
                     }
                 }
                 
-                return colorArray;
+                return colors;
+            },
+            
+            getColorArray: function(colors) {
+                
+                colorArray = [];
+                
+                colorArray.push({color:"white", amount: colors.white});
+                colorArray.push({color:"blue", amount: colors.blue});
+                colorArray.push({color:"black", amount: colors.black});
+                colorArray.push({color:"red", amount: colors.red});
+                colorArray.push({color:"green", amount: colors.green});
+                colorArray.push({color:"colorless", amount: colors.colorless});
+                
+                return colorArray;  
             },
             
             getDeckTypes: function () {
                 //return an array of the number of cards of each type in the deck
-                var typeArray = [
-                    {type:"artifact",amount:0},
-                    {type:"creature",amount:0},
-                    {type:"enchantment",amount:0},
-                    {type:"instant",amount:0},
-                    {type:"land",amount:0},
-                    {type:"phenomenon",amount:0},
-                    {type:"plane",amount:0},
-                    {type:"planeswalker",amount:0},
-                    {type:"scheme",amount:0},
-                    {type:"sorcery",amount:0},
-                    {type:"tribal",amount:0},
-                    {type:"vanguard",amount:0}    
-                ];
+                var types = {
+                    artifact: 0,
+                    creature: 0,
+                    enchantment: 0,
+                    instant: 0,
+                    land: 0,
+                    phenomenon: 0,
+                    plane: 0,
+                    planeswalker: 0,
+                    scheme: 0,
+                    sorcery: 0,
+                    tribal: 0,
+                    vanguard: 0    
+                };
                 
                 for(var i = 0; i < this.deck.length; i++)
                 {    
@@ -855,72 +924,104 @@
                     {
                         if(this.deck[i].card.types[j] === "artifact")
                         {
-                            typeArray[0].amount++;
+                            types.artifact += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "creature")
                         {
-                            typeArray[1].amount++;
+                            types.creature += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "enchantment")
                         {
-                            typeArray[2].amount++;
+                            types.enchantment += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "instant")
                         {
-                            typeArray[3].amount++;
+                            types.instant += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "land")
                         {
-                            typeArray[4].amount++;
+                            types.land += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "phenomenon")
                         {
-                            typeArray[5].amount++;
+                            types.phenomenon += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "plane")
                         {
-                            typeArray[6].amount++;
+                            types.plane += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "planeswalker")
                         {
-                            typeArray[7].amount++;
+                            types.planeswalker += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "scheme")
                         {
-                            typeArray[8].amount++;
+                            types.scheme += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "sorcery")
                         {
-                            typeArray[9].amount++;
+                            types.sorcery += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "tribal")
                         {
-                            typeArray[10].amount++;
+                            types.tribal += this.deck[i].amount;
                         }
                         else if(this.deck[i].card.types[j] === "vanguard")
                         {
-                            typeArray[11].amount++;
+                            types.vanguard += this.deck[i].amount;
                         }
                         
                     }
                 }   
+                
+                return types;
+            },
+            
+            getTypeArray: function(types) {
+                
+                typeArray = [];
+                
+                typeArray.push({type:"artifact", amount: types.artifact});
+                typeArray.push({type:"creature", amount: types.creature});
+                typeArray.push({type:"enchantment", amount: types.enchantment});
+                typeArray.push({type:"instant", amount: types.instant});
+                typeArray.push({type:"land", amount: types.land});
+                typeArray.push({type:"phenomenon", amount: types.phenomenon});
+                typeArray.push({type:"plane", amount: types.plane});
+                typeArray.push({type:"planeswalker", amount: types.planeswalker});
+                typeArray.push({type:"scheme", amount: types.scheme});
+                typeArray.push({type:"sorcery", amount: types.sorcery});
+                typeArray.push({type:"tribal", amount: types.tribal});
+                typeArray.push({type:"vanguard", amount: types.vanguard});
                 
                 return typeArray;
             },
             
             getDeckCMC: function () {
                 //return an array of the number of cards of each Converted Mana Cost in the deck
-                console.log("CMC");
-                var cmcArray = [];
+                var cmc = {};
                 
                 for(var i = 0; i <= 16; i++)
                 {
-                    cmcArray[i] = 0;
+                    cmc[i] = 0;
                 }
                 
                 for(var i = 0; i < this.deck.length; i++)
                 {
-                    cmcArray[this.deck[i].card.cmc]++;
+                    cmc[this.deck[i].card.cmc] += this.deck[i].amount;
+                }
+                
+                console.log(cmc);
+                
+                return cmc;
+            },
+            
+            getCMCArray: function(cmcList) {
+                cmcArray = []
+                
+                for(var i = 0; i < 16; i++)
+                {
+                    cmcArray[i] = cmcList[i];
                 }
                 
                 console.log(cmcArray);
@@ -940,6 +1041,17 @@
                 return average/this.deck.length;
             },
             
+            hasCMC: function(i) {
+                if(i > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            },   
+                  
             storeDeck: function () {
                 //put deck into local storage
                 if(typeof(Storage) !== "undefined") 
