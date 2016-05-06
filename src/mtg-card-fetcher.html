@@ -11,7 +11,6 @@
                 next();
             });
             function changeView(viewName)   {
-                console.log(viewName);
                 document.getElementsByTagName('mtg-card-fetcher')[0].setAttribute('view', viewName);
             }
             page.start();
@@ -41,18 +40,19 @@
                 width: 90%;
             }
             #deck-container {
-                width: 70%;
+                width: 75%;
+                float: left;
+            }
+            div.deck-card {
+                height: 350px;
+                margin: 15px;
                 float: left;
             }
             #deck-stats {
-                width: 30%;
+                width: 25%;
                 float: right;
                 vertical-align: top;
                 background-color: rgb(125, 125, 125);
-            }
-            div.deck-card {
-                margin: 15px;
-                float: left;
             }
             div.menu-container a {
                 padding: 20px;
@@ -126,6 +126,27 @@
             button.add-to-deck {
                 margin: 10px;
                 padding: 5px;
+            }
+            #toggle-form {
+                margin: 10px;
+            }
+            div.booster-card {
+                height: 350px;
+                margin: 15px;
+                float: left;
+            }
+            #booster-container {
+                width: 100%;
+                float: left;
+            }
+            div.picks-card {
+                height: 350px;
+                margin: 15px;
+                float: left;
+            }
+            #picks-container {
+                width: 100%;
+                float: left;
             }
         </style>
         <div class="component-container">
@@ -241,118 +262,125 @@
                         <p>LOADING...</p>
                     </template>
                     <template is="dom-if" if="[[ready_]]">
-                        <template is="dom-repeat" items="[[cards]]">
-                            <table class="card-table">
-                                <tr>
-                                    <td>
-                                        <img src="{{getCardImage(item.editions)}}" alt="[[item.name]]" />
-                                        <p>Illus. [[getCardArtist(item.editions)]]</p>
-                                    </td>
-                                    <td>
-                                        <div class$="[[getCardColor(item.colors)]]">
-                                            <h2>[[item.name]]</h2>
-                                            <p>
-                                                <template is="dom-repeat" items="[[item.supertypes]]">
-                                                    [[item]]
-                                                </template>
-                                                <template is="dom-repeat" items="[[item.types]]">
-                                                    [[item]]
-                                                </template>
-                                                <template is="dom-if" if="[[item.subtypes]]">
-                                                    - 
-                                                    <template is="dom-repeat" items="[[item.subtypes]]">
+                        <template is ="dom-if" if="[[cardsIsEmpty(cards)]]">
+                            <span>No Results to display</span>
+                        </template>
+                        <template is ="dom-if" if="[[!cardsIsEmpty(cards)]]">
+                            <span>Number of Results: [[getNumResults(cards)]]</span>
+                            <hr />
+                            <template is="dom-repeat" items="[[cards]]">
+                                <table class="card-table">
+                                    <tr>
+                                        <td>
+                                            <img src="{{getCardImage(item.editions)}}" alt="[[item.name]]" />
+                                            <p>Illus. [[getCardArtist(item.editions)]]</p>
+                                        </td>
+                                        <td>
+                                            <div class$="[[getCardColor(item.colors)]]">
+                                                <h2>[[item.name]]</h2>
+                                                <p>
+                                                    <template is="dom-repeat" items="[[item.supertypes]]">
                                                         [[item]]
                                                     </template>
-                                                </template>
-                                            </p>
-                                            <div class="card-text-container">
-                                                <span class="card-text">[[item.text]]</span>
-                                            </div>
-                                            <template is="dom-if" if="[[hasCardFlavor(item.editions)]]">
-                                                <div class="card-flavor-container">
-                                                    <span class="card-flavor">[[getCardFlavor(item.editions)]]</span>
+                                                    <template is="dom-repeat" items="[[item.types]]">
+                                                        [[item]]
+                                                    </template>
+                                                    <template is="dom-if" if="[[item.subtypes]]">
+                                                        - 
+                                                        <template is="dom-repeat" items="[[item.subtypes]]">
+                                                            [[item]]
+                                                        </template>
+                                                    </template>
+                                                </p>
+                                                <div class="card-text-container">
+                                                    <span class="card-text">[[item.text]]</span>
                                                 </div>
-                                            </template>
-                                            <button class="add-to-deck" on-tap="_addCardToDeck">Add To Deck</button>
-                                        </div>
-                                        
-                                    </td>
-                                    <td>
-                                        <div class="card-data-container">
-                                            <ul>
-                                                <template is="dom-if" if="[[item.loyalty]]">
-                                                    <li>
-                                                        <em>Loyalty:</em> [[item.loyalty]]
-                                                    </li>
+                                                <template is="dom-if" if="[[hasCardFlavor(item.editions)]]">
+                                                    <div class="card-flavor-container">
+                                                        <span class="card-flavor">[[getCardFlavor(item.editions)]]</span>
+                                                    </div>
                                                 </template>
-                                                <template is="dom-if" if="[[item.power]]">
+                                                <button class="add-to-deck" on-tap="_addCardToDeck">Add To Deck</button>
+                                            </div>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="card-data-container">
+                                                <ul>
+                                                    <template is="dom-if" if="[[item.loyalty]]">
+                                                        <li>
+                                                            <em>Loyalty:</em> [[item.loyalty]]
+                                                        </li>
+                                                    </template>
+                                                    <template is="dom-if" if="[[item.power]]">
+                                                        <li>
+                                                            <em>P/T:</em> [[item.power]]/[[item.toughness]]
+                                                        </li>
+                                                    </template>
                                                     <li>
-                                                        <em>P/T:</em> [[item.power]]/[[item.toughness]]
+                                                        <template is="dom-if" if="[[item.cost]]">
+                                                            Cost: [[item.cost]]
+                                                        </template>
+                                                        <template is="dom-if" if="[[!item.cost]]">
+                                                            Cost: 0
+                                                        </template>
                                                     </li>
-                                                </template>
-                                                <li>
-                                                    <template is="dom-if" if="[[item.cost]]">
-                                                        Cost: [[item.cost]]
-                                                    </template>
-                                                    <template is="dom-if" if="[[!item.cost]]">
-                                                        Cost: 0
-                                                    </template>
-                                                </li>
-                                                <li>
-                                                    <em>CMC:</em> [[item.cmc]]
-                                                </li>
-                                                <br />
-                                                <li>
-                                                    Editions:
-                                                    <ul>
-                                                        <template is="dom-repeat" items="[[item.editions]]">
-                                                            <li>
-                                                                [[item.set]] - [[item.set_id]] ([[item.rarity]])
-                                                            </li>
-                                                        </template>
-                                                    </ul>
-                                                </li>
-                                                <br />
-                                                <li>
-                                                    Legal Formats:
-                                                    <ul>
-                                                        <template is="dom-if" if="[[item.formats.standard]]">
-                                                            <li>
-                                                                standard - [[item.formats.standard]]
-                                                            </li>
-                                                        </template>
-                                                        <template is="dom-if" if="[[item.formats.modern]]">
-                                                            <li>
-                                                                modern - [[item.formats.modern]]
-                                                            </li>
-                                                        </template>
-                                                        <template is="dom-if" if="[[item.formats.legacy]]">
-                                                            <li>
-                                                                legacy - [[item.formats.legacy]]
-                                                            </li>
-                                                        </template>
-                                                        <template is="dom-if" if="[[item.formats.vintage]]">
-                                                            <li>
-                                                                vintage - [[item.formats.vintage]]
-                                                            </li>
-                                                        </template>
-                                                        <template is="dom-if" if="[[item.formats.commander]]">
-                                                            <li>
-                                                                commander - [[item.formats.commander]]
-                                                            </li>
-                                                        </template>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                    <li>
+                                                        <em>CMC:</em> [[item.cmc]]
+                                                    </li>
+                                                    <br />
+                                                    <li>
+                                                        Editions:
+                                                        <ul>
+                                                            <template is="dom-repeat" items="[[item.editions]]">
+                                                                <li>
+                                                                    [[item.set]] - [[item.set_id]] ([[item.rarity]])
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </li>
+                                                    <br />
+                                                    <li>
+                                                        Legal Formats:
+                                                        <ul>
+                                                            <template is="dom-if" if="[[item.formats.standard]]">
+                                                                <li>
+                                                                    standard - [[item.formats.standard]]
+                                                                </li>
+                                                            </template>
+                                                            <template is="dom-if" if="[[item.formats.modern]]">
+                                                                <li>
+                                                                    modern - [[item.formats.modern]]
+                                                                </li>
+                                                            </template>
+                                                            <template is="dom-if" if="[[item.formats.legacy]]">
+                                                                <li>
+                                                                    legacy - [[item.formats.legacy]]
+                                                                </li>
+                                                            </template>
+                                                            <template is="dom-if" if="[[item.formats.vintage]]">
+                                                                <li>
+                                                                    vintage - [[item.formats.vintage]]
+                                                                </li>
+                                                            </template>
+                                                            <template is="dom-if" if="[[item.formats.commander]]">
+                                                                <li>
+                                                                    commander - [[item.formats.commander]]
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
                                 <hr />
-                            </table>
+                            </template>
                         </template>
                     </template>
                     <template is="dom-if" if="[[error_]]">
-                        <h1>AN ERROR HAS OCCURED</h1>
+                        <h1>AN ERROR HAS OCCURED. Please retry your search or reload the page.</h1>
                     </template>
                 </template>
                 <!-- 
@@ -363,54 +391,61 @@
                 <template is="dom-if" if="{{_viewIsDeck(view)}}">
                     <h1>Build</h1>
                     <hr />
-                    <div id="deck-container">
-                    <template id="deck-template" is="dom-repeat" items="[[deck]]" filter="filterDeck" observe="type deck.amount">
-                        <div class="deck-card">
-                                <img src="[[getCardImage(item.card.editions)]]" alt="[[item.card.name]]" />
+                    <template is="dom-if" if="[[deckIsEmpty(deck)]]">
+                        <h2>The deck is empty.</h2>
+                        <span> Cards added to the deck on the Fetch page will show up here.</span>
+                    </template>
+                    <template is="dom-if" if="[[!deckIsEmpty(deck)]]">
+                        <div id="deck-container">
+                            <template id="deck-template" is="dom-repeat" items="[[deck]]">
+                                <div class="deck-card">
+                                    <img src="[[getCardImage(item.card.editions)]]" alt="[[item.card.name]]" />
+                                    <br />
+                                    <button class="remove-card" value="[[item.card.name]]" on-tap="_removeCard">Remove</button>
+                                    <span id="card-amount">{{item.amount}}</span>
+                                    <button class="add-card" value="[[item.card.name]]" on-tap="_addCard">Add</button>
+                                </div>
+                            </template>
+                        </div>
+                        <div id="deck-stats">
+                            [[updateStats()]]
+                            <ul>
+                                <li>Cards in Deck: [[numcards]] stats: [[stats.numCards]]</li>
                                 <br />
-                                <button class="remove-card" value="[[item.card.name]]" on-tap="_removeCard">Remove</button>
-                                <span id="card-amount">{{item.amount}}</span>
-                                <button class="add-card" value="[[item.card.name]]" on-tap="_addCard">Add</button>
+                                <li>Colors of Cards: 
+                                    <ul>
+                                        <template is="dom-repeat" items="[[getColorArray(stats.colors)]]" filter="filterColor">
+                                            <li>[[item.color]]: [[item.amount]]</li>
+                                        </template>
+                                    </ul>
+                                </li>
+                                <br />
+                                <li>Card Types: 
+                                    <ul>
+                                        <template is="dom-repeat" items="[[getTypeArray(stats.types)]]" filter="filterType">
+                                            <li>[[item.type]]: [[item.amount]]</li>
+                                        </template>
+                                    </ul>
+                                </li>
+                                <br />
+                                <li>
+                                    Average Converted Mana Cost: [[stats.averageCMC]]
+                                </li>
+                                <br />
+                                <li>Mana Curve: 
+                                    <ul>
+                                        <template is="dom-repeat" items="[[getCMCArray(stats.cmcList)]]" >
+                                            <template is="dom-if" if="[[hasCMC(item)]]">
+                                                <li>[[index]]: [[item]]</li>
+                                            </template>
+                                        </template>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <button class="clear-deck" on-tap="_clearDeck">Clear Deck</button>
+                            
                         </div>
                     </template>
-                    </div>
-                    <div id="deck-stats">
-                        <ul>
-                            <li>Cards in Deck: [[numcards]] stats: [[stats.numCards]]</li>
-                            <br />
-                            <li>Colors of Cards: 
-                                <ul>
-                                    <template is="dom-repeat" items="[[getColorArray(stats.colors)]]" filter="filterColor">
-                                        <li>[[item.color]]: [[item.amount]]</li>
-                                    </template>
-                                </ul>
-                            </li>
-                            <br />
-                            <li>Card Types: 
-                                <ul>
-                                    <template is="dom-repeat" items="[[getTypeArray(stats.types)]]" filter="filterType">
-                                        <li>[[item.type]]: [[item.amount]]</li>
-                                    </template>
-                                </ul>
-                            </li>
-                            <br />
-                            <li>
-                                Average Converted Mana Cost: [[stats.averageCMC]]
-                            </li>
-                            <br />
-                            <li>Mana Curve: 
-                                <ul>
-                                    <template is="dom-repeat" items="[[getCMCArray(stats.cmcList)]]" >
-                                        <template is="dom-if" if="[[hasCMC(item)]]">
-                                            <li>[[index]]: [[item]]</li>
-                                        </template>
-                                    </template>
-                                </ul>
-                            </li>
-                        </ul>
-                        <button class="clear-deck" on-tap="_clearDeck">Clear Deck</button>
-                        
-                    </div>
                 </template>
                 <!-- 
                     ------------------
@@ -431,20 +466,43 @@
                             <option value="KTK">Khans of Tarkir</option>
                         </select>
                         <button id="booster" on-tap="_getBooster">Open Booster</button>
+                        <button id="clear-picks" on-tap="clearPicks" style="float: right;">Clear Picks and Reset Draft</button>
                     </form>
                     <hr />
-                    <h2>Booster Contents</h2>
-                    <template is="dom-if" if="[[loading_]]">
-                        LOADING BOOSTER...
-                    </template>
-                    <template is="dom-if" if="[[ready_]]">
-                        <template is="dom-repeat" items="[[booster.cards]]">
-                            <img src="[[item.imageUrl]]" alt="[[item.name]]" on-tap="_pickCard"/>
-                            
+                    <template is="dom-if" if="[[!display_]]">
+                        <template is="dom-if" if="[[!loading_]]">
+                            <h2>No booster is opened</h2>
+                            <span>Choose a set and open a boosterpack</span>
                         </template>
+                        <template is="dom-if" if="[[loading_]]">
+                            LOADING BOOSTER...
+                        </template> 
                     </template>
-                    <hr />
-                    <h2>Selected Cards</h2>
+                    <template is="dom-if" if="[[display_]]">
+                        <h2>Booster Contents</h2>
+                        <span>Click a card to select it</span>
+                        <br>
+                        <template is="dom-if" if="[[ready_]]">
+                            <div id="booster-container">
+                                <template id="boosterDisplay" is="dom-repeat" items="[[booster]]" filter="filterIndex" as="packs">
+                                    <template is="dom-repeat" items="[[packs.pack.cards]]">
+                                        <div  class="booster-card">
+                                            <img src="[[item.imageUrl]]" alt="[[item.name]]" on-tap="_pickCard"/>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                        <hr />
+                        <h2>Selected Cards</h2>
+                        <div id="picks-container">
+                            <template is="dom-repeat" items="[[picks]]">
+                                <div  class="picks-card">
+                                    <img src="[[item.imageUrl]]" alt="[[item.name]]"/>
+                                </div>
+                            </template> 
+                        </div>
+                    </template>
                 </template>
             </div>
         </div>
@@ -474,7 +532,18 @@
                 },
                 
                 booster:    {
-                    type: Object
+                    type: Array,
+                    value: []
+                },
+                
+                index: {
+                    type: Number,
+                    value: 0  
+                },
+                
+                picks:  {
+                    type: Object,
+                    value: []
                 },
                 
                 deck:   {
@@ -505,11 +574,15 @@
                 error_: {
                     type: Boolean,
                     value: false
+                },
+                
+                display_: {
+                    type: Boolean,
+                    value: false
                 }
             }, 
            
             attached: function() {
-                console.log("attached");
                 this.retrieveDeck();
             },
             
@@ -543,14 +616,6 @@
                     
                 }
                 this.loadCards_(search);
-            },
-            
-            _getBooster: function (e)    {
-                e.preventDefault();
-                this.ready_ = false;
-                this.loading_ = true;
-                var set = this.$$('#draft-select').value;
-                this.loadBooster(set);
             },
             
             _toggleForm: function(e)    {
@@ -598,6 +663,14 @@
                 }     
             },
             
+            filterIndex: function(item) {
+                if(item.index === this.index) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            
             filterDeck: function(item) {
                 return true;
             },
@@ -635,16 +708,18 @@
                 }
             },
             
-            _pickCard: function(e)    {
-                console.log(e);
-                console.log("a card was picked");
-                console.log(e.model._nodes[0].alt);
-            },
-            
             _clearDeck: function(e) {
                 this.splice('deck', 0, this.deck.length+1);
                 localStorage.clear();
                 this.updateStats();
+            },
+            
+            clearPicks: function(e) {
+                e.preventDefault();
+                this.index = 0;
+                this.display_ = false;
+                this.picks = [];  
+                this.booster = [];
             },
             
             _addCardToDeck: function(e) {
@@ -672,7 +747,6 @@
                     this.storeDeck();
                     this.updateStats();            
                 }
-                console.log(this.deck);
             },
            
             loadCards_: function (search)     {
@@ -694,6 +768,20 @@
                 xhr.send();
             },
             
+            _getBooster: function (e)    {
+                e.preventDefault();
+                this.booster = [];
+                this.display_ = false;
+                this.ready_ = false;
+                this.loading_ = true;
+                var set = this.$$('#draft-select').value;
+                
+                for(var i = 0; i < 8; i++)
+                {
+                    this.loadBooster(set);
+                }
+            },
+            
             loadBooster: function(set)     {
                 var self = this;
                 var xhr = new XMLHttpRequest();
@@ -702,10 +790,13 @@
                 
                 xhr.onload = function(evt)   {
                     if(xhr.status === 200)   {
-                        self.booster = JSON.parse(xhr.responseText);
-                        console.log(self.booster);
-                        self.loading_ = false;
-                        self.ready_ = true;
+                        self.push('booster', {pack: JSON.parse(xhr.responseText), index: self.booster.length});
+                        if(self.booster.length === 8)
+                        {
+                            self.loading_ = false;
+                            self.ready_ = true;
+                            self.display_ = true;
+                        }
                     } else  {
                         self.error_ = true;
                         self.loading_ = false;
@@ -714,6 +805,40 @@
                 };
                 
                 xhr.send();
+            },
+            
+            _pickCard: function(e)    {
+                e.preventDefault();
+                
+                for(var i = 0; i < this.booster[this.index].pack.cards.length; i++)
+                {
+                    if(e.model.__data__.item.name === this.booster[this.index].pack.cards[i].name)
+                    {
+                        this.booster[this.index].pack.cards.splice(i,1);
+                    }
+                }   
+                this.push('picks', e.model.__data__.item);
+                
+                this.aiPick();
+                this.rotateBooster();
+            },
+            
+            rotateBooster: function() {
+                if(this.index < 7) {
+                    this.index++;
+                } else {
+                    this.index = 0
+                }
+                this.$$('#boosterDisplay').render();
+            },
+            
+            aiPick: function() {
+                for(var i = 0; i < 8; i++)
+                {
+                    if(i !== this.index) {
+                        this.booster[i].pack.cards.splice(0,1);
+                    }
+                }
             },
                            
             _viewIsSearch: function (v)  {
@@ -1020,8 +1145,6 @@
                     cmc[this.deck[i].card.cmc] += this.deck[i].amount;
                 }
                 
-                console.log(cmc);
-                
                 return cmc;
             },
             
@@ -1032,8 +1155,6 @@
                 {
                     cmcArray[i] = cmcList[i];
                 }
-                
-                console.log(cmcArray);
                 
                 return cmcArray;
             },
@@ -1060,7 +1181,33 @@
                     return false;
                 }
             },   
-                  
+            
+            getNumResults: function(cards) {
+                return cards.length;
+            },
+            
+            cardsIsEmpty: function(cards) {
+                if(cards.length === 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            },
+            
+            deckIsEmpty: function(deck) {
+                if(deck.length === 0)
+                {
+                    return true;
+                } 
+                else
+                {
+                    return false;
+                }
+            },
+            
             storeDeck: function () {
                 //put deck into local storage
                 if(typeof(Storage) !== "undefined") 
