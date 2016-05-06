@@ -1,27 +1,11 @@
 <link rel="import" href="@polymer/polymer/polymer.html" />
 
 <dom-module id="mtg-card-fetcher">
-    <script src="page/page.js"></script>
-    <script>
-        (function ()    {
-            //page('/', changeView("search"));
-            page('/:view', function (context, next)    {
-                context.handled = true;
-                changeView(context.params.view);
-                next();
-            });
-            function changeView(viewName)   {
-                document.getElementsByTagName('mtg-card-fetcher')[0].setAttribute('view', viewName);
-            }
-            page.start();
-        })();
-    </script>
+    
+    
     <template>
         <style>
             a {
-                color: rgb(220,220,220);
-            }
-            a:visited {
                 color: rgb(220,220,220);
             }
             table {
@@ -50,12 +34,11 @@
             }
             #deck-stats {
                 width: 25%;
-                float: right;
+                position: fixed;
+                left: 73%;
                 vertical-align: top;
-                background-color: rgb(125, 125, 125);
-            }
-            div.menu-container a {
-                padding: 20px;
+                margin:10px;
+                background-color: rgb(80, 80, 80);
             }
             div.card-description-container {
                 margin: 10px;
@@ -124,8 +107,12 @@
                 
             }
             button.add-to-deck {
+                border-radius: 4px;
+                border: none;
+                padding: 6px 11px;
+                border: none;
+                color: #242424;
                 margin: 10px;
-                padding: 5px;
             }
             #toggle-form {
                 margin: 10px;
@@ -148,24 +135,126 @@
                 width: 100%;
                 float: left;
             }
+
+            nav {
+                background-color: rgb(20, 20, 20);
+                width: 100%;
+                
+            }
+
+            nav.menu-container .nav-header {
+                float: left;
+            }
+
+            nav.menu-container button {
+                background-color: transparent;
+                border: none;
+                float: left;
+                padding: 20px 20px;
+            }
+
+            nav.menu-container button a {
+                text-decoration: none;
+                font-size: 18px;
+            }
+
+            nav.menu-container button a:hover {
+                color: white;
+            }
+
+            nav.menu-container .nav-list ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden; 
+            }
+
+            nav.menu-container .nav-list li {
+                float: left;
+                overflow: auto;
+            }
+
+            nav.menu-container .nav-list li a {
+                display: block;
+                padding: 20px;
+                text-align: center;
+                text-decoration: none;
+            }
+
+            nav.menu-container .nav-list li a:hover {
+                color: white;
+            }
+            #content {
+                margin-top: 40px;
+                padding-right: 15px;
+                padding-left: 15px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .search-div {
+                background-color: rgb(80, 80, 80);
+                transition: visibility 2s, opacity 0.5s linear;
+            }
+            #search-form {
+                padding: 5px;
+            }
+            .pretty-input {
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                height: 1.5em;
+                padding: 4px;
+                background-color: #ffffff;
+                color: #555555;
+                box-shadow: none;
+            }
+
+            .pretty-input:focus {
+                border-radius: 5px;
+                border: 1px solid lightblue;
+                box-shadow: 0px 0px 8px purple;
+                outline: none;
+                outline-offset: 0px;
+            }
+            .pretty-button {
+                border-radius: 4px;
+                border: none;
+                padding: 6px 11px;
+                border: none;
+                color: #242424;
+            }
+
+            .pretty-button:hover {
+                color: #ffffff;
+            }
+            
+            .pretty-button:focus {
+                outline: none;
+                box-shadow: 0px 0px 8px purple;
+            }
+
+            .pretty-dropdown {
+                text-align: center;
+                padding: 6px 8px;
+                border-radius: 4px;
+                
+            }
+            .pretty-dropdown:focus {
+                outline: none;
+                box-shadow: 0px 0px 8px purple;
+            }
+            #add-remove{
+                text-align: center;
+            }
+            #button-wrap{
+                text-align: center;
+                margin: 5px;
+            }
+            .component-container {
+                margin-top:100px;
+            }
         </style>
         <div class="component-container">
-            <div class="menu-container">
-                <a href="http://localhost:8080/">
-                    <span>MTG Card Fetcher</span>
-                </a>
-                <a href="{{baseUrl}}search">
-                    <span>Fetch</span>
-                </a>
-                <a href="{{baseUrl}}deck">
-                    <span>Build</span>
-                </a>
-                <a href="{{baseUrl}}draft">
-                    <span>Draft</span>
-                </a>
-            </div>
-            <hr />
-            <div class="content">
+            <div id="content">
                 <!-- 
                     -------------------
                         SEARCH VIEW
@@ -173,8 +262,6 @@
                                        --->
                 <template is="dom-if" if="[[_viewIsSearch(view)]]">
                     <div class="search-div">
-                        <h1>Fetch</h1>
-                        <hr />
                         <form id="search-form" on-submit="_searchForCards">
                             <table id = "search-table">
                                 <tr>
@@ -182,8 +269,8 @@
                                         <label for="search-field">Card Name: </label>
                                     </td>
                                     <td>
-                                        <input type="text" id="search-field" placeholder="Enter a card name here!">
-                                        <button id="fetch" on-tap="_searchForCards">Fetch</button>
+                                        <input type="text" class="pretty-input" id="search-field" placeholder="Enter a card name here!">
+                                        <button class="pretty-button" id="fetch" on-tap="_searchForCards">Fetch</button>
                                     </td>
                                 </tr>
                             </table>
@@ -194,20 +281,20 @@
                                             <label for="rules-text">Rules Text: </label>
                                         </td>
                                         <td>
-                                            <input type="text" id="rules-text">    
+                                            <input type="text" class="pretty-input" id="rules-text">    
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><label for="super-type">Super-Type: </label></td>
-                                        <td><input type="text" id="super-type"></td>
+                                        <td><input type="text" class="pretty-input" id="super-type"></td>
                                     </tr>
                                     <tr>
                                         <td><label for="card-type">Type: </label></td>
-                                        <td><input type="text" id="card-type"></td>
+                                        <td><input type="text" class="pretty-input" id="card-type"></td>
                                     </tr>
                                     <tr>
                                         <td><label for="sub-type">Sub-Type: </label></td>
-                                        <td><input type="text" id="sub-type"></td>
+                                        <td><input type="text" class="pretty-input" id="sub-type"></td>
                                     </tr>
                                     <tr>
                                         <td>Colors: </td>
@@ -235,13 +322,13 @@
                                     <tr>
                                         <td><label for="set">Set:</label></td>
                                         <td>
-                                            <input type="text" id="set" placeholder="Shorthand Identifier">
+                                            <input type="text" class="pretty-input" id="set" placeholder="Shorthand Identifier">
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><label for="format-select">Format: </label></td>
                                         <td>
-                                            <select id="format-select">
+                                            <select class="pretty-dropdown" id="format-select">
                                                 <option value="">All Formats</option>
                                                 <option value="standard">Standard</option>
                                                 <option value="modern">Modern</option>
@@ -254,9 +341,8 @@
                                 </table>
                             </div>
                             <table>
-                            <button id="toggle-form" on-tap="_toggleForm">Toggle Advanced Search</button>
+                            <button class="pretty-button" id="toggle-form" on-tap="_toggleForm">Toggle Advanced Search</button>
                         </form>
-                        <hr />
                     </div>
                     <template is="dom-if" if="[[loading_]]">
                         <p>LOADING...</p>
@@ -388,9 +474,7 @@
                         DECK BUILDER VIEW 
                     -------------------------
                                              --->
-                <template is="dom-if" if="{{_viewIsDeck(view)}}">
-                    <h1>Build</h1>
-                    <hr />
+                <template is="dom-if" if="{{_viewIsBuild(view)}}">
                     <template is="dom-if" if="[[deckIsEmpty(deck)]]">
                         <h2>The deck is empty.</h2>
                         <span> Cards added to the deck on the Fetch page will show up here.</span>
@@ -401,9 +485,11 @@
                                 <div class="deck-card">
                                     <img src="[[getCardImage(item.card.editions)]]" alt="[[item.card.name]]" />
                                     <br />
-                                    <button class="remove-card" value="[[item.card.name]]" on-tap="_removeCard">Remove</button>
-                                    <span id="card-amount">{{item.amount}}</span>
-                                    <button class="add-card" value="[[item.card.name]]" on-tap="_addCard">Add</button>
+                                    <div id="add-remove">
+                                        <button class="pretty-button" value="[[item.card.name]]" on-tap="_removeCard">-</button>
+                                        <span id="card-amount">{{item.amount}}</span>
+                                        <button class="pretty-button" value="[[item.card.name]]" on-tap="_addCard">+</button>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -442,8 +528,9 @@
                                     </ul>
                                 </li>
                             </ul>
-                            <button class="clear-deck" on-tap="_clearDeck">Clear Deck</button>
-                            
+                            <div id="button-wrap">
+                                <button class="pretty-button" on-tap="_clearDeck">Clear Deck</button>
+                            </div>
                         </div>
                     </template>
                 </template>
@@ -453,8 +540,6 @@
                     ------------------
                                       --->
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
-                    <h1>Draft</h1>
-                    <hr />
                     <form id="draft-form" on-submit="_getBooster">
                         <select id="draft-select">
                             <option value="SOI">Shadows over Innistrad</option>
@@ -465,8 +550,8 @@
                             <option value="FRF">Fate Reforged</option>
                             <option value="KTK">Khans of Tarkir</option>
                         </select>
-                        <button id="booster" on-tap="_getBooster">Open Booster</button>
-                        <button id="clear-picks" on-tap="clearPicks" style="float: right;">Clear Picks and Reset Draft</button>
+                        <button class="pretty-button" id="booster" on-tap="_getBooster">Open Booster</button>
+                        <button class="pretty-button" id="clear-picks" on-tap="clearPicks" style="float: right;">Clear Picks and Reset Draft</button>
                     </form>
                     <hr />
                     <template is="dom-if" if="[[!display_]]">
@@ -845,8 +930,8 @@
                 return v === 'search';
             },
             
-            _viewIsDeck: function (v)  {
-                return v === 'deck';
+            _viewIsBuild: function (v)  {
+                return v === 'build';
             },
             
             _viewIsDraft: function (v)  {
@@ -883,12 +968,22 @@
             updateAverageCMC: function () {
                 var totalCMC = 0;
                 var cardCount = 0;
+                var landFlag = false;
                 for(var i = 0; i < this.deck.length; i++)
                 {
-                    cardCount += this.deck[i].amount;
-                    if(this.deck[i].card.cmc !== undefined)
+                    for(var j = 0; j < this.deck[i].card.types.length; j++)
                     {
+                        if(this.deck[i].card.types[j] === "land") {
+                            console.log(this.deck[i].card.name);
+                            landFlag = true;
+                        }
+                    }
+                    if(this.deck[i].card.cmc !== undefined && !landFlag)
+                    {
+                        cardCount += this.deck[i].amount;
                         totalCMC += (this.deck[i].card.cmc * this.deck[i].amount)
+                    } else if(landFlag) {
+                        landFlag = false;
                     }
                 }
                 
@@ -1140,9 +1235,20 @@
                     cmc[i] = 0;
                 }
                 
+                var landFlag = false;
                 for(var i = 0; i < this.deck.length; i++)
                 {
-                    cmc[this.deck[i].card.cmc] += this.deck[i].amount;
+                    for(var j = 0; j < this.deck[i].card.types.length; j++)
+                    {
+                        if(this.deck[i].card.types[j] === "land") {
+                            landFlag = true;
+                        }
+                    }
+                    if(!landFlag) {
+                        cmc[this.deck[i].card.cmc] += this.deck[i].amount;
+                    } else {
+                        landFlag = false;
+                    }
                 }
                 
                 return cmc;
@@ -1157,18 +1263,6 @@
                 }
                 
                 return cmcArray;
-            },
-            
-            getDeckAverageCMC: function () {
-                //get average Converted Mana Cost of cards in deck
-                var average = 0;
-                
-                for(var i = 0; i < this.deck.length; i++)
-                {
-                    average += this.deck[i].card.cmc;
-                }
-                
-                return average/this.deck.length;
             },
             
             hasCMC: function(i) {

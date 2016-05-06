@@ -7,18 +7,136 @@
         window.Polymer = window.Polymer || {};
         window.Polymer.dom = 'shadow';
     </script>
+    <script src="page/page.js"></script>
+    <script>
+        (function ()    {
+            //page('/', changeView("search"));
+            page('/:view', function (context, next)    {
+                context.handled = true;
+                changeView(context.params.view);
+                next();
+            });
+            function changeView(viewName)   {                            
+                var element = document.getElementsByClassName('nav-item');
+                if(viewName === "search") {
+                    element[0].setAttribute('id', 'nav-selected');
+                    element[1].setAttribute('id', '');
+                    element[2].setAttribute('id', '');
+                } else if(viewName === "build") {
+                    element[0].setAttribute('id', '');
+                    element[1].setAttribute('id', 'nav-selected');
+                    element[2].setAttribute('id', '');
+                } else if(viewName === "draft") {
+                    element[0].setAttribute('id', '');
+                    element[1].setAttribute('id', '');
+                    element[2].setAttribute('id', 'nav-selected');
+                }
+                document.getElementsByTagName('mtg-card-fetcher')[0].setAttribute('view', viewName);
+            }
+            page.start();
+        })();
+    </script>
     <style>
         body {
-            background-color: rgb(40,40,40);
-            color: rgb(220,220,220);
-            font-family: "Trebuchet MS", Helvetica, sans-serif
+            background-color: rgb(40, 40, 40);
+            color: rgb(200, 200, 200);
+            font-family: "Trebuchet MS", Helvetica, sans-serif;
+            margin: 0px;
+        }
+        nav {
+            background-color: rgb(20, 20, 20);
+            width: 100%;
+            position: fixed;
+            top: 0;
         }
         
+        nav a:visited {
+            color: rgb(200, 200, 200);
+        }
+
+        nav.menu-container .nav-header {
+            float: left;
+        }
+
+        nav.menu-container button {
+            background-color: transparent;
+            border: none;
+            float: left;
+            padding: 25px;
+            outline: none;
+        }
+
+        nav.menu-container button a {
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        nav.menu-container button a:hover {
+            color: white;
+        }
+
+        nav.menu-container .nav-list ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            
+        }
+
+        nav.menu-container .nav-list li {
+            float: left;
+            overflow: auto;
+            border-top: 5px solid rgb(20, 20, 20);
+            border-bottom: 5px solid rgb(20, 20, 20);
+        }
+
+        nav.menu-container .nav-list li a {
+            display: block;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        nav.menu-container .nav-list li a:hover {
+            color: white;
+        }
+        #nav-selected {
+            border-top: solid 5px purple;
+            border-bottom: solid 5px purple;
+        }
             
     </style>
     <link rel="import" href="mtg-card-fetcher.html" />
 </head>
 <body>
+    <nav class="menu-container">
+        <div class="nav-header">
+            <button>
+                <a class="logo-text" href="http://localhost:8080/">
+                    <span>MTG Card Fetcher</span>
+                </a>
+            </button>
+        </div>
+        <div class="nav-list">
+            <ul>
+                <li class="nav-item">
+                    <a href="/search">
+                        <span>Fetch</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/build">
+                        <span>Build</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/draft">
+                        <span>Draft</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
     <mtg-card-fetcher view="search"> </mtg-card-fetcher>
 </body>
 </html>
