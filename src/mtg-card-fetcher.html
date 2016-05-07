@@ -5,6 +5,65 @@
     
     <template>
         <style>
+            .loader,
+            .loader:before,
+            .loader:after {
+                background: #c8c8c8;
+                -webkit-animation: load1 1s infinite ease-in-out;
+                animation: load1 1s infinite ease-in-out;
+                width: 1em;
+                height: 4em;
+            }
+            .loader:before,
+            .loader:after {
+                position: absolute;
+                top: 0;
+                content: '';
+            }
+            .loader:before {
+                left: -1.5em;
+                -webkit-animation-delay: -0.32s;
+                animation-delay: -0.32s;
+            }
+            .loader {
+                color: #c8c8c8;
+                text-indent: -9999em;
+                margin: 88px auto;
+                position: relative;
+                font-size: 11px;
+                -webkit-transform: translateZ(0);
+                -ms-transform: translateZ(0);
+                transform: translateZ(0);
+                -webkit-animation-delay: -0.16s;
+                animation-delay: -0.16s;
+            }
+            .loader:after {
+                left: 1.5em;
+            }
+            @-webkit-keyframes load1 {
+                0%,
+                80%,
+                100% {
+                    box-shadow: 0 0;
+                    height: 4em;
+                }
+                40% {
+                    box-shadow: 0 -2em;
+                    height: 5em;
+                }
+            }
+            @keyframes load1 {
+                0%,
+                80%,
+                100% {
+                    box-shadow: 0 0;
+                    height: 4em;
+                }
+                40% {
+                    box-shadow: 0 -2em;
+                    height: 5em;
+                }
+            }
             a {
                 color: rgb(220,220,220);
             }
@@ -247,10 +306,14 @@
             }
             #button-wrap{
                 text-align: center;
-                margin: 5px;
+                margin: 10px;
             }
             .component-container {
                 margin-top:100px;
+            }
+            #draft-form {
+                background-color: rgb(80, 80, 80);
+                padding: 5px;
             }
         </style>
         <div class="component-container">
@@ -345,7 +408,7 @@
                         </form>
                     </div>
                     <template is="dom-if" if="[[loading_]]">
-                        <p>LOADING...</p>
+                        <div class="loader">LOADING...</div>
                     </template>
                     <template is="dom-if" if="[[ready_]]">
                         <template is ="dom-if" if="[[cardsIsEmpty(cards)]]">
@@ -495,6 +558,7 @@
                         </div>
                         <div id="deck-stats">
                             [[updateStats()]]
+                            <h2 style="text-align: center; text-decoration: underline;">Deck Stats</h2>
                             <ul>
                                 <li>Cards in Deck: [[numcards]] stats: [[stats.numCards]]</li>
                                 <br />
@@ -541,7 +605,7 @@
                                       --->
                 <template is="dom-if" if="{{_viewIsDraft(view)}}">
                     <form id="draft-form" on-submit="_getBooster">
-                        <select id="draft-select">
+                        <select class="pretty-dropdown" id="draft-select">
                             <option value="SOI">Shadows over Innistrad</option>
                             <option value="OGW">Oath of the Gatewatch</option>
                             <option value="BFZ">Battle for Zendikar</option>
@@ -553,14 +617,14 @@
                         <button class="pretty-button" id="booster" on-tap="_getBooster">Open Booster</button>
                         <button class="pretty-button" id="clear-picks" on-tap="clearPicks" style="float: right;">Clear Picks and Reset Draft</button>
                     </form>
-                    <hr />
                     <template is="dom-if" if="[[!display_]]">
                         <template is="dom-if" if="[[!loading_]]">
                             <h2>No booster is opened</h2>
                             <span>Choose a set and open a boosterpack</span>
                         </template>
                         <template is="dom-if" if="[[loading_]]">
-                            LOADING BOOSTER...
+                            <h1 style="text-align: center;">Loading Booster</h1>
+                            <div class="loader">LOADING BOOSTER...</div>
                         </template> 
                     </template>
                     <template is="dom-if" if="[[display_]]">
@@ -914,7 +978,13 @@
                 } else {
                     this.index = 0
                 }
+                this.display_ = false;
+                this.loading_ = true;
+                
                 this.$$('#boosterDisplay').render();
+                
+                this.display_ = true;
+                this.loading_ = false;
             },
             
             aiPick: function() {
